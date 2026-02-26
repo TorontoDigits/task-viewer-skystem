@@ -1,0 +1,716 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arimo', sans-serif;
+}
+
+body {
+  background-color: #f0f2f5;
+}
+
+.sky-dashboard {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Top Bar */
+.sky-top-bar {
+  background: white;
+  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+}
+
+.sky-brand-area {
+  display: flex;
+  align-items: center;
+}
+
+.sky-tab-wrapper {
+  display: flex;
+  gap: 1rem;
+}
+
+.sky-top-tab {
+  padding: 0.6rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.sky-top-tab.sky-active {
+  background: #ec008b;
+  color: white;
+}
+
+.sky-header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.sky-btn-icon {
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  background: #f8f9fc;
+  border: 1px solid #e0e4ec;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sky-btn-icon:hover {
+  background: #ec008b;
+  color: white;
+  border-color: #ec008b;
+}
+
+.sky-btn-primary {
+  padding: 0.6rem 1.5rem;
+  border-radius: 30px;
+  background: #ec008b;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sky-btn-primary:hover {
+  background: #c00074;
+}
+
+.sky-category-dropdown {
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  border: 1px solid #e0e4ec;
+  background: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Filter Rail */
+.sky-filter-rail {
+  background: white;
+  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.sky-chip-filter {
+  padding: 0.5rem 1.2rem;
+  border-radius: 30px;
+  background: #f8f9fc;
+  border: 1px solid #e0e4ec;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sky-chip-filter.sky-active {
+  background: #ec008b;
+  color: white;
+  border-color: #ec008b;
+}
+
+.sky-see-more-container {
+  position: relative;
+  margin-left: auto;
+}
+
+.sky-see-more-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 30px;
+  background: #f8f9fc;
+  border: 1px solid #e0e4ec;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sky-see-more-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 0.5rem;
+  min-width: 180px;
+  display: none;
+  z-index: 100;
+}
+
+.sky-see-more-dropdown.sky-active {
+  display: block;
+}
+
+.sky-see-more-item {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.2s;
+}
+
+.sky-see-more-item:hover {
+  background: #f8f9fc;
+}
+
+/* Table Container */
+.sky-table-container {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.sky-modern-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+ .sky-modern-table th {
+    background: #05acfd;
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: #ffffff;
+    border-bottom: 2px solid #05acfd;
+}
+
+
+.sky-modern-table td {
+  padding: 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #e0e4ec;
+  border-right: 1px solid #ec008b;
+}
+
+.sky-status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sky-status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.sky-status-overdue {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.sky-status-in-progress {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.sky-status-completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.sky-status-in-review {
+  background: #e0d4fc;
+  color: #4a2b9e;
+}
+
+.sky-status-rejected {
+  background: #f5c6cb;
+  color: #721c24;
+}
+
+.sky-status-deleted {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.sky-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 16px;
+  background: #f8f9fc;
+  cursor: pointer;
+  position: relative;
+}
+
+.sky-badge {
+  background: #ec008b;
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+.sky-action-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sky-action-btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sky-action-btn.sky-edit-task {
+  background: none;
+  color: #000000;
+}
+
+.sky-action-btn.sky-delete-task {
+   background: none;
+  color: #000000;
+}
+#sky-showCompletedTasks{
+  display: none;
+}
+/* Controls Section */
+.sky-controls-section {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 20px;
+}
+
+.sky-page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sky-page-size-selector select {
+  padding: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid #e0e4ec;
+}
+
+.sky-completed-tasks-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sky-show-hidden-tasks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ec008b;
+  cursor: pointer;
+}
+
+/* Pagination */
+.sky-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.sky-pagination button {
+  padding: 0.5rem 1.2rem;
+  border: 1px solid #e0e4ec;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.sky-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Legend */
+.sky-legend {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 20px;
+  flex-wrap: wrap;
+}
+
+.sky-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.sky-legend-color {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.sky-legend-color.sky-pending {
+  background: #fff3cd;
+}
+
+.sky-legend-color.sky-completed {
+  background: #d4edda;
+}
+
+.sky-legend-color.sky-overdue {
+  background: #f8d7da;
+}
+
+.sky-legend-color.sky-deleted {
+  background: #e2e3e5;
+}
+
+.sky-legend-color.sky-rejected {
+  background: #f5c6cb;
+}
+
+.sky-legend-color.sky-pending.sky-active {
+  background: #856404;
+  box-shadow: 0 0 0 2px #856404;
+}
+
+.sky-legend-color.sky-completed.sky-active {
+  background: #155724;
+  box-shadow: 0 0 0 2px #155724;
+}
+
+.sky-legend-color.sky-overdue.sky-active {
+  background: #721c24;
+  box-shadow: 0 0 0 2px #721c24;
+}
+
+.sky-legend-color.sky-deleted.sky-active {
+  background: #383d41;
+  box-shadow: 0 0 0 2px #383d41;
+}
+
+.sky-legend-color.sky-rejected.sky-active {
+  background: #721c24;
+  box-shadow: 0 0 0 2px #721c24;
+}
+
+.sky-legend-count {
+  font-size: 0.8rem;
+  color: #666;
+  margin-left: 5px;
+}
+
+/* Modals */
+.sky-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.sky-modal-overlay.sky-active {
+  display: flex;
+}
+
+.sky-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.sky-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sky-close-modal {
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.sky-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.sky-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sky-form-group.sky-full-width {
+  grid-column: span 2;
+}
+
+.sky-form-group input,
+.sky-form-group select,
+.sky-form-group textarea {
+  padding: 0.6rem;
+  border: 1px solid #e0e4ec;
+  border-radius: 8px;
+}
+
+.sky-submit-btn {
+  margin-top: 1.5rem;
+  padding: 0.8rem;
+  background: #ec008b;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Popups */
+.sky-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.sky-popup-overlay.sky-active {
+  display: flex;
+}
+
+.sky-popup-content {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.sky-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sky-close-popup {
+  cursor: pointer;
+}
+
+.sky-comment-item {
+  padding: 0.8rem;
+  border-bottom: 1px solid #eee;
+}
+
+.sky-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f8f9fc;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.sky-remove-file {
+  cursor: pointer;
+  color: #ff4444;
+}
+
+.sky-comment-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.sky-comment-input input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #e0e4ec;
+  border-radius: 8px;
+}
+
+.sky-comment-input button {
+  padding: 0.5rem 1rem;
+  background: #ec008b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Upload Area */
+.sky-upload-area {
+  border: 2px dashed #e0e4ec;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.sky-upload-area:hover {
+  border-color: #ec008b;
+}
+
+/* Export Grid */
+.sky-export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.sky-export-option {
+  padding: 1rem;
+  background: #f8f9fc;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sky-export-option:hover {
+  background: #ec008b;
+  color: white;
+}
+
+/* Customize Grid */
+.sky-grid-fields-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sky-grid-field-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8f9fc;
+  border-radius: 8px;
+}
+
+.sky-grid-field-item.sky-selected {
+  background: #e8f0fe;
+  border-left: 3px solid #ec008b;
+}
+
+.sky-drag-handle {
+  cursor: move;
+  color: #999;
+}
+
+/* Filter Modal */
+.sky-filter-section {
+  margin-bottom: 1.5rem;
+}
+
+.sky-filter-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sky-filter-row select,
+.sky-filter-row input {
+  padding: 0.5rem;
+  border: 1px solid #e0e4ec;
+  border-radius: 8px;
+  min-width: 150px;
+}
+
+.sky-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.sky-clear-filters-btn {
+  padding: 0.6rem 1.2rem;
+  background: #f8d7da;
+  color: #721c24;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+/* Bulk Edit */
+.sky-bulk-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sky-bulk-edit-select {
+  padding: 0.5rem;
+  border: 1px solid #e0e4ec;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.sky-secondary-tab {
+  background: #f5f7fa;
+}

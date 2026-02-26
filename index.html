@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>task · command pro</title>
+  <!-- Arimo font + icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<div class="sky-dashboard">
+  <!-- top bar -->
+  <div class="sky-top-bar">
+    <div class="sky-brand-area">
+      <div class="sky-tab-wrapper">
+        <div class="sky-top-tab sky-active" data-tab="general">General Tasks</div>
+        <div class="sky-top-tab" data-tab="account">Account Tasks</div>
+      </div>
+    </div>
+    <div class="sky-header-actions">
+      <div class="sky-btn-icon" id="sky-filterBtn">
+        <i class="fas fa-filter"></i> Filter
+      </div>
+      <div class="sky-btn-icon" id="sky-clearFilterBtn">
+        <i class="fas fa-times"></i> Clear Filter
+      </div>
+    
+      <div class="sky-btn-primary" id="sky-exportBtn"><i class="fas fa-download"></i> Export</div>
+      <div class="sky-btn-primary" id="sky-addTaskBtn"><i class="fas fa-plus-circle"></i> New Task</div>
+    </div>
+  </div>
+
+  <!-- Secondary Tabs Row (Month & Close, Accrued, Income) -->
+  <div class="sky-filter-rail" style="margin-bottom: 1rem; background: #f8f9fc;">
+    <div class="sky-tab-wrapper" style="width: 100%; justify-content: flex-start;">
+      <div class="sky-top-tab sky-secondary-tab sky-active" data-secondary="monthClose">Month & Close</div>
+      <div class="sky-top-tab sky-secondary-tab" data-secondary="accrued">Accrued</div>
+      <div class="sky-top-tab sky-secondary-tab" data-secondary="income">Income</div>
+    </div>
+  </div>
+
+  <!-- filter chips with see more -->
+  <div class="sky-filter-rail">
+    <span class="sky-chip-filter sky-active" data-filter="all"><i class="fas fa-list"></i> All</span>
+    <span class="sky-chip-filter" data-filter="pending"><i class="fas fa-clock"></i> Pending</span>
+    <span class="sky-chip-filter" data-filter="overdue"><i class="fas fa-exclamation-triangle"></i> Overdue</span>
+    <span class="sky-chip-filter" data-filter="completed"><i class="fas fa-check-circle"></i> Completed</span>
+    <span class="sky-chip-filter" data-filter="rejected"><i class="fas fa-times-circle"></i> Rejected</span>
+    <span class="sky-chip-filter" data-filter="deleted"><i class="fas fa-trash"></i> Deleted</span>
+    <span class="sky-chip-filter" data-filter="review"><i class="fas fa-check-circle"></i> Review</span>
+    
+    <div class="sky-see-more-container">
+      <div class="sky-see-more-btn" id="sky-seeMoreBtn">
+        <i class="fas fa-ellipsis-h"></i> See More
+      </div>
+      <div class="sky-see-more-dropdown" id="sky-seeMoreDropdown">
+        <div class="sky-see-more-item" id="sky-rejectAction">
+          <i class="fas fa-times-circle"></i> Reject
+        </div>
+        <div class="sky-see-more-item" id="sky-reviewAction">
+          <i class="fas fa-check-circle"></i> Review
+        </div>
+        <div class="sky-see-more-item" id="sky-deleteAction">
+          <i class="fas fa-trash"></i> Delete
+        </div>
+        <div class="sky-see-more-item" id="sky-bulkEditAction">
+          <i class="fas fa-edit"></i> Bulk Edit
+        </div>
+        <div class="sky-see-more-item" id="sky-customizeGridAction">
+          <i class="fas fa-table"></i> Customize Grid
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- main table -->
+  <div class="sky-table-container">
+    <table class="sky-modern-table" id="sky-mainTable">
+      <thead id="sky-tableHeader">
+        <tr id="sky-headerRow"></tr>
+      </thead>
+      <tbody id="sky-tasksTableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="sky-controls-section">
+    <div class="sky-page-size-selector">
+      <label>Page Size:</label>
+      <select id="sky-pageSize">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+
+    <div class="sky-completed-tasks-toggle">
+      <input type="checkbox" id="sky-showCompletedTasks">
+      <label for="sky-showCompletedTasks"></label>
+    </div>
+
+    <div class="sky-show-hidden-tasks" id="sky-showHiddenTasks">
+      <i class="fas fa-eye"></i>
+      <span>Show Hidden Tasks</span>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="sky-pagination">
+    <button id="sky-prevPage" disabled>Previous</button>
+    <span class="sky-page-info" id="sky-pageInfo">Page 1 of 1</span>
+    <button id="sky-nextPage" disabled>Next</button>
+  </div>
+
+  <!-- Legend with dynamic counts -->
+  <div class="sky-legend">
+    <div class="sky-legend-item" data-filter="pending">
+      <div class="sky-legend-color sky-pending" id="sky-pendingColor"></div>
+      <span>Pending</span>
+      <span class="sky-legend-count" id="sky-pendingCount">0</span>
+    </div>
+    <div class="sky-legend-item" data-filter="completed">
+      <div class="sky-legend-color sky-completed" id="sky-completedColor"></div>
+      <span>Completed</span>
+      <span class="sky-legend-count" id="sky-completedCount">0</span>
+    </div>
+    <div class="sky-legend-item" data-filter="overdue">
+      <div class="sky-legend-color sky-overdue" id="sky-overdueColor"></div>
+      <span>Overdue</span>
+      <span class="sky-legend-count" id="sky-overdueCount">0</span>
+    </div>
+    <div class="sky-legend-item" data-filter="deleted">
+      <div class="sky-legend-color sky-deleted" id="sky-deletedColor"></div>
+      <span>Deleted</span>
+      <span class="sky-legend-count" id="sky-deletedCount">0</span>
+    </div>
+    <div class="sky-legend-item" data-filter="rejected">
+      <div class="sky-legend-color sky-rejected" id="sky-rejectedColor"></div>
+      <span>Rejected</span>
+      <span class="sky-legend-count" id="sky-rejectedCount">0</span>
+    </div>
+    <div class="sky-legend-item" onclick="openBulkEdit()">
+      <i class="fas fa-edit sky-legend-icon"></i>
+      <span>Edit</span>
+    </div>
+   
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="sky-modal-overlay" id="sky-filterModal">
+  <div class="sky-modal-content sky-filter-modal-content" style="max-width: 700px;">
+    <div class="sky-modal-header">
+      <h2>Filter Tasks</h2>
+      <div class="sky-close-modal" id="sky-closeFilterModal"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-filter-section">
+      <h3>Add Filter</h3>
+      <div class="sky-filter-row">
+        <select id="sky-filterField">
+          <option value="id">ID</option>
+          <option value="name">Task Name</option>
+          <option value="description">Description</option>
+          <option value="status">Task Status</option>
+          <option value="category">Task List Name</option>
+          <option value="assignee">Assignee</option>
+          <option value="dueDate">Due Date</option>
+          <option value="owner">Task Owner</option>
+          <option value="reviewer">Reviewer</option>
+          <option value="approver">Approver</option>
+          <option value="priority">Priority</option>
+          <option value="recurrenceType">Recurrence Type</option>
+          <option value="jeNumber">JE Number</option>
+          <option value="createdBy">Created By</option>
+        </select>
+      
+        <select id="sky-filterOperator">
+          <option value="equals">Equals</option>
+          <option value="contains">Contains</option>
+          <option value="startsWith">Starts With</option>
+          <option value="endsWith">Ends With</option>
+        </select>
+        
+        <select id="sky-filterValue" style="display: none;"></select>
+        <input type="text" id="sky-filterValueInput" placeholder="Value">
+        <button type="button" id="sky-addFilterBtn" style="background:#ec008b; color:white; border:none; padding:0.3rem 1rem; border-radius:20px;">Add</button>
+      </div>
+    </div>
+    <div id="sky-activeFilters"></div>
+    <div class="sky-filter-actions">
+      <button class="sky-btn-icon" id="sky-clearAllFilters">Clear All</button>
+      <button class="sky-btn-primary" id="sky-applyFilters">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customize Grid Modal -->
+<div class="sky-modal-overlay" id="sky-customizeGridModal">
+  <div class="sky-modal-content sky-customize-grid-content">
+    <div class="sky-modal-header">
+      <h2>Customize Grid</h2>
+      <div class="sky-close-modal" id="sky-closeCustomizeGrid"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-grid-fields-container" id="sky-gridFields"></div>
+    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="sky-btn-icon" id="sky-resetGridBtn">Reset to Default</button>
+      <button class="sky-btn-primary" id="sky-saveGridBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Edit Modal -->
+<div class="sky-modal-overlay" id="sky-bulkEditModal">
+  <div class="sky-modal-content">
+    <div class="sky-modal-header">
+      <h2>Bulk Edit Tasks</h2>
+      <div class="sky-close-modal" id="sky-closeBulkEdit"><i class="fas fa-times"></i></div>
+    </div>
+    <div id="sky-bulkEditSelectedTasks" style="margin-bottom: 15px; color: #666;"></div>
+    <div class="sky-bulk-edit-actions">
+      <select id="sky-bulkEditField" class="sky-bulk-edit-select">
+        <option value="status">Status</option>
+        <option value="category">Category</option>
+        <option value="assignee">Assignee</option>
+        <option value="owner">Owner</option>
+        <option value="reviewer">Reviewer</option>
+        <option value="approver">Approver</option>
+        <option value="priority">Priority</option>
+      </select>
+      <input type="text" id="sky-bulkEditValue" placeholder="New Value" class="sky-bulk-edit-select">
+      <button class="sky-btn-primary" id="sky-applyBulkEdit">Apply to Selected</button>
+    </div>
+    <div style="max-height: 400px; overflow-y: auto;">
+      <table class="sky-modern-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="sky-selectAllBulk"></th>
+            <th>ID</th>
+            <th>Task Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="sky-bulkEditTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="sky-modal-overlay" id="sky-rejectModal">
+  <div class="sky-modal-content">
+    <div class="sky-modal-header">
+      <h2>Reject Task</h2>
+      <div class="sky-close-modal" id="sky-closeRejectModal"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-form-group">
+      <label>Select Task to Reject</label>
+      <select id="sky-rejectTaskSelect" class="sky-category-dropdown" style="width: 100%;"></select>
+    </div>
+    <div class="sky-form-group">
+      <label>Rejection Reason</label>
+      <textarea id="sky-rejectReason" rows="4" placeholder="Enter reason for rejection..."></textarea>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+      <button class="sky-btn-icon" id="sky-cancelReject">Cancel</button>
+      <button class="sky-btn-primary" id="sky-confirmReject">Reject Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="sky-modal-overlay" id="sky-reviewModal">
+  <div class="sky-modal-content">
+    <div class="sky-modal-header">
+      <h2>Review Task</h2>
+      <div class="sky-close-modal" id="sky-closeReviewModal"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-form-group">
+      <label>Select Task to Review</label>
+      <select id="sky-reviewTaskSelect" class="sky-category-dropdown" style="width: 100%;"></select>
+    </div>
+    <div class="sky-form-group">
+      <label>Review Comments</label>
+      <textarea id="sky-reviewComments" rows="4" placeholder="Enter review comments..."></textarea>
+    </div>
+    <div class="sky-form-group">
+      <label>Review Status</label>
+      <select id="sky-reviewStatus" class="sky-category-dropdown">
+        <option value="approved">Approve</option>
+        <option value="needs-changes">Needs Changes</option>
+        <option value="reject">Reject</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+      <button class="sky-btn-icon" id="sky-cancelReview">Cancel</button>
+      <button class="sky-btn-primary" id="sky-confirmReview">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- task modal -->
+<div class="sky-modal-overlay" id="sky-taskModal">
+  <div class="sky-modal-content">
+    <div class="sky-modal-header">
+      <h2 id="sky-modalTitle">Add New Task</h2>
+      <div class="sky-close-modal" id="sky-closeModal"><i class="fas fa-times"></i></div>
+    </div>
+    <form id="sky-taskForm">
+      <input type="hidden" id="sky-taskId">
+      
+      <div class="sky-form-grid">
+        <div class="sky-form-group">
+          <label>Task ID *</label>
+          <input type="text" id="sky-taskIdDisplay" placeholder="e.g., TASK-001" required>
+          <small style="color:#666; font-size:0.7rem;">You can enter custom ID or leave empty for auto-generated</small>
+        </div>
+
+        <div class="sky-form-group">
+          <label>Task Name *</label>
+          <input type="text" id="sky-taskName" required>
+        </div>
+
+        <div class="sky-form-group">
+          <label>Category *</label>
+          <select id="sky-taskCategory" required>
+            <option value="monthClose">Month & Close</option>
+            <option value="accrued">Accrued</option>
+            <option value="income">Income</option>
+            <option value="payroll">Payroll</option>
+            <option value="tax">Tax</option>
+          </select>
+        </div>
+
+        <div class="sky-form-group">
+          <label>Status</label>
+          <select id="sky-taskStatus">
+            <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
+            <option value="in-review">In Review</option>
+            <option value="completed">Completed</option>
+            <option value="overdue">Overdue</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="sky-form-group sky-full-width">
+          <label>Description</label>
+          <textarea id="sky-taskDesc" rows="2"></textarea>
+        </div>
+
+        <div class="sky-form-group">
+          <label>Assignee</label>
+          <input type="text" id="sky-taskAssignee">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Assign Date</label>
+          <input type="date" id="sky-taskAssignDate">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Review Date</label>
+          <input type="date" id="sky-taskReviewDate">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Due Date</label>
+          <input type="date" id="sky-taskDueDate">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Owner</label>
+          <input type="text" id="sky-taskOwner">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Reviewer</label>
+          <input type="text" id="sky-taskReviewer">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Approver</label>
+          <input type="text" id="sky-taskApprover">
+        </div>
+
+        <div class="sky-form-group">
+          <label>Priority</label>
+          <select id="sky-taskPriority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+
+        <div class="sky-form-group">
+          <label>Recurrence Type</label>
+          <select id="sky-taskRecurrence">
+            <option value="none">None</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+          </select>
+        </div>
+
+        <div class="sky-form-group sky-full-width">
+          <label>Comments</label>
+          <div class="sky-comment-list" id="sky-modalCommentList" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:0.5rem; border-radius:10px; margin-bottom:0.5rem;"></div>
+          <div style="display:flex; gap:0.5rem;">
+            <input type="text" id="sky-modalCommentInput" placeholder="Add comment..." style="flex:1;">
+            <button type="button" id="sky-addModalCommentBtn" style="background:#ec008b; color:white; border:none; padding:0.3rem 1rem; border-radius:20px; cursor:pointer;">Add</button>
+          </div>
+        </div>
+
+        <div class="sky-form-group sky-full-width">
+          <label>Documents</label>
+          <div class="sky-upload-area" id="sky-dropZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop files or click</p>
+            <input type="file" id="sky-fileInput" multiple style="display:none;">
+          </div>
+          <div class="sky-file-list" id="sky-fileList"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="sky-submit-btn">Save Task</button>
+    </form>
+  </div>
+</div>
+
+<!-- comment popup -->
+<div class="sky-popup-overlay" id="sky-commentPopup">
+  <div class="sky-popup-content">
+    <div class="sky-popup-header">
+      <h3 id="sky-commentTaskName">Comments</h3>
+      <div class="sky-close-popup" id="sky-closeCommentPopup"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-comment-list" id="sky-commentList"></div>
+    <div class="sky-comment-input">
+      <input type="text" id="sky-commentInput" placeholder="Write comment...">
+      <button id="sky-addCommentBtn">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- document popup -->
+<div class="sky-popup-overlay" id="sky-docPopup">
+  <div class="sky-popup-content">
+    <div class="sky-popup-header">
+      <h3 id="sky-docTaskName">Documents</h3>
+      <div class="sky-close-popup" id="sky-closeDocPopup"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-doc-list" id="sky-docList"></div>
+  </div>
+</div>
+
+<!-- export modal -->
+<div class="sky-modal-overlay" id="sky-exportModal">
+  <div class="sky-modal-content" style="max-width:600px;">
+    <div class="sky-modal-header">
+      <h2>Export Tasks</h2>
+      <div class="sky-close-modal" id="sky-closeExport"><i class="fas fa-times"></i></div>
+    </div>
+    <div class="sky-export-grid">
+      <div class="sky-export-option" data-format="csv"><i class="fas fa-file-csv"></i><span>CSV</span></div>
+      <div class="sky-export-option" data-format="json"><i class="fas fa-file-code"></i><span>JSON</span></div>
+      <div class="sky-export-option" data-format="xml"><i class="fas fa-file-code"></i><span>XML</span></div>
+      <div class="sky-export-option" data-format="excel"><i class="fas fa-file-excel"></i><span>Excel</span></div>
+      <div class="sky-export-option" data-format="html"><i class="fas fa-file-code"></i><span>HTML</span></div>
+      <div class="sky-export-option" data-format="pdf"><i class="fas fa-file-pdf"></i><span>PDF</span></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
