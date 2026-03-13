@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Viewer - Consolidated Close Checklist</title>
+    <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+<div class="skystemtaskmaster-main-wrapper">
+    <div class="skystemtaskmaster-top-header">
+        <div class="skystemtaskmaster-logo-section">
+            <div class="skystemtaskmaster-logo">
+                <img src="images/logo-skystem.png" alt="SKYSTEM Logo" class="skystemtaskmaster-logo-img">
+            </div>
+            <div class="skystemtaskmaster-welcome-text">
+                <h2>Welcome Back, Palakh</h2>
+                <p>December 5, 2025</p>
+            </div>
+        </div>
+        <div class="skystemtaskmaster-right-header">
+            <div class="skystemtaskmaster-search-container">
+                <input type="text" placeholder="Search for anything" class="skystemtaskmaster-search-bar">
+                <span class="skystemtaskmaster-search-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="7" stroke="#666" stroke-width="2"/>
+                        <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </div>
+        </div>
+    </div>
+    <h2>Task Viewer</h2>
+      <div class="skystemtaskmaster-task-viewer">
+    <div class="skystemtaskmaster-stat-box skystemtaskmaster-completed">
+        <div class="skystemtaskmaster-stat-icon">✔</div>
+        <div class="skystemtaskmaster-stat-content">
+            <div class="skystemtaskmaster-stat-label">Completed</div>
+            <div class="skystemtaskmaster-stat-value" id="completedCount">0</div>
+        </div>
+    </div>
+    
+    <div class="skystemtaskmaster-stat-box skystemtaskmaster-in-progress">
+        <div class="skystemtaskmaster-stat-icon">⏳</div>
+        <div class="skystemtaskmaster-stat-content">
+            <div class="skystemtaskmaster-stat-label">In Progress</div>
+            <div class="skystemtaskmaster-stat-value" id="inProgressCount">0</div>
+        </div>
+    </div>
+    
+    <div class="skystemtaskmaster-stat-box skystemtaskmaster-not-started">
+        <div class="skystemtaskmaster-stat-icon">⏹</div>
+        <div class="skystemtaskmaster-stat-content">
+            <div class="skystemtaskmaster-stat-label">Not Started</div>
+            <div class="skystemtaskmaster-stat-value" id="notStartedCount">0</div>
+        </div>
+    </div>
+    
+    <div class="skystemtaskmaster-stat-box skystemtaskmaster-profile-box">
+        <span class="skystemtaskmaster-bell">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="black">
+                <path d="M12 24c1.104 0 2-.896 2-2h-4c0 1.104.896 2 2 2zm6.364-6V11c0-3.07-1.641-5.64-4.364-6.32V4c0-.828-.672-1.5-1.5-1.5S11 3.172 11 4v.68C8.277 5.36 6.636 7.93 6.636 11v7l-1.636 1.636V20h16v-0.364L18.364 18z"/>
+            </svg>
+        </span>
+        <div class="skystemtaskmaster-profile">PK</div>
+    </div>
+</div>
+
+<div class="skystemtaskmaster-action-bar">
+    <div class="skystemtaskmaster-action-left">
+        <button class="skystemtaskmaster-btn-new">
+            New Task
+            <span class="icon-plus">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path d="M12 5v14M5 12h14" stroke="black" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+        </button>
+<div class="skystemtaskmaster-dropdown-container">
+    <button class="skystemtaskmaster-three-dots" id="threeDotsBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="6" r="2" fill="currentColor"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            <circle cx="12" cy="18" r="2" fill="currentColor"/>
+        </svg>
+    </button>
+        <div class="skystemtaskmaster-dropdown-menu" id="threeDotsDropdown">
+          <div class="dropdown-item" id="dropdownDownload">
+                <i class="fa-solid fa-download"></i> Download
+                <div class="submenu">
+                    <div class="submenu-item" data-format="pdf">
+                        <i class="fa-solid fa-file-pdf"></i> PDF
+                    </div>
+
+                    <div class="submenu-item" data-format="excel">
+                        <i class="fa-solid fa-file-excel"></i> Excel
+                    </div>
+
+                    <div class="submenu-item" data-format="csv">
+                        <i class="fa-solid fa-file-csv"></i> CSV
+                    </div>
+
+                    <div class="submenu-item" data-format="json">
+                        <i class="fa-solid fa-code"></i> JSON
+                    </div>
+                </div>
+         </div>
+                <div class="dropdown-item" id="dropdownFilter">
+                <i class="fa-solid fa-filter"></i> Filter
+            </div>
+
+            <div class="dropdown-item" id="dropdownDelete">
+                <i class="fa-solid fa-trash"></i> Delete
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <div class="dropdown-item" id="dropdownCustomGrid">
+                <i class="fa-solid fa-table-cells"></i> Custom Grid
+            </div>
+    </div>
+</div>
+
+        <button class="skystemtaskmaster-action-btn" id="customGridBtn" style="display: none;">
+            Custom Grid
+        </button>
+    
+    </div>
+    
+     <div class="skystemtaskmaster-action-right">
+        <select class="skystemtaskmaster-task-dropdown">
+            <option value="all">All Tasks</option>
+            <option value="assigned-to-me">Assigned to Me</option>
+            <option value="self-assigned">Self Assigned</option>
+            <option value="created-by-me">Created by Me</option>
+        </select>
+    </div>
+</div>
+    <div class="skystemtaskmaster-checklist-title">Consolidated Close Checklist</div>
+    <div class="skystemtaskmaster-container">
+        <div class="skystemtaskmaster-sidebar" id="mainSidebar">
+        </div>
+        <div class="skystemtaskmaster-table-wrapper">
+            <table id="mainTable">
+                <thead>
+                    <tr id="mainHeader">
+                        <th>Task Name </th>
+                        <th>Acc</th>
+                        <th>Tdoc</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Owner</th>
+                        <th>Reviewer</th>
+                        <th>CDoc</th>
+                        <th>+/- Days</th>
+                    </tr>
+                </thead>
+                <tbody id="mainTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    <script src="./dist/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+/* ==============================
+   Reset & Base Styles
+   ============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Add these styles to your existing CSS file */
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #ff0080;
+}
+
+.modal-content button[type="submit"] {
+    background: #ff0080;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+}
+
+.modal-content button[type="submit"]:hover {
+    background: #e50072;
+}
+
+/* Checklist Header */
+.skystemtaskmaster-checklist-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 10px 0;
+}
+
+.skystemtaskmaster-checklist-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.skystemtaskmaster-checklist-title:hover {
+    background: #f0f0f0;
+}
+
+.skystemtaskmaster-checklist-title.editing {
+    background: #fff;
+    border: 2px solid #ff0080;
+    padding: 3px 8px;
+}
+
+.skystemtaskmaster-edit-title {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+    padding: 5px;
+}
+
+.skystemtaskmaster-edit-title:hover {
+    color: #ff0080;
+}
+
+/* Sidebar Lists */
+.skystemtaskmaster-sidebar {
+    width: 60px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.skystemtaskmaster-sidebar div {
+    width: 40px;
+    height: 40px;
+    margin: 10px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #666;
+    position: relative;
+}
+
+.skystemtaskmaster-sidebar div:hover {
+    background: #f0f0f0;
+    border-radius: 8px;
+}
+
+.skystemtaskmaster-sidebar div.active {
+    background: #ff0080;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.skystemtaskmaster-sidebar div .list-name-tooltip {
+    display: none;
+    position: absolute;
+    left: 45px;
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 100;
+}
+
+.skystemtaskmaster-sidebar div:hover .list-name-tooltip {
+    display: block;
+}
+
+/* Task Actions */
+.add-task-icon {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.add-task-icon:hover {
+    color: #ff0080;
+}
+
+/* Delete Button */
+.skystemtaskmaster-action-btn#deleteTaskBtn {
+    color: #dc3545;
+}
+
+.skystemtaskmaster-action-btn#deleteTaskBtn:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* ==============================
+   Main Wrapper
+   ============================== */
+.skystemtaskmaster-main-wrapper {
+    width: 95%;
+    margin: 20px auto;
+}
+
+/* ==============================
+   Top Header
+   ============================== */
+
+.skystemtaskmaster-top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.skystemtaskmaster-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 50px; 
+}
+
+.skystemtaskmaster-logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2196f3;
+    letter-spacing: 1px;
+}
+
+.skystemtaskmaster-welcome-text h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.skystemtaskmaster-welcome-text p {
+    font-size: 14px;
+    color: #777;
+    margin: 0;
+}
+
+.skystemtaskmaster-right-header {
+    display: flex;
+    align-items: center;
+}
+
+
+.skystemtaskmaster-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.skystemtaskmaster-search-bar {
+    padding: 10px 40px 10px 15px; /* Right padding for icon (left padding hata diya) */
+    border-radius: 25px;
+    border: 1px solid #e0e0e0;
+    width: 280px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.skystemtaskmaster-search-icon {
+    position: absolute;
+    right: 12px;  /* Left ki jagah right use kiya */
+    left: auto;   /* Left property hata di */
+    color: #999;
+    font-size: 16px;
+    z-index: 1;
+    pointer-events: none; /* Optional: icon par click karne se input focus ho */
+}
+
+.skystemtaskmaster-search-bar:focus {
+    outline: none;
+    border-color: #ff0080;
+    box-shadow: 0 0 0 2px rgba(255, 0, 128, 0.1);
+}
+
+.skystemtaskmaster-search-bar::placeholder {
+    color: #aaa;
+}
+.skystemtaskmaster-search-icon {
+    position: absolute;
+    right: 12px;
+    color: #999;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.skystemtaskmaster-search-bar {
+
+    border-radius: 25px;
+    border: 1px solid #e0e0e0;
+    width: 280px;
+    font-size: 14px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.skystemtaskmaster-search-bar:focus {
+    outline: none;
+    border-color: #ff0080;
+    box-shadow: 0 0 0 2px rgba(255, 0, 128, 0.1);
+}
+
+.skystemtaskmaster-search-bar::placeholder {
+    color: #aaa;
+}
+
+/* ==============================
+   Task Viewer Stats
+   ============================== */
+.skystemtaskmaster-task-viewer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #a0c4ff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 15px 0 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Right gradient effect */
+.skystemtaskmaster-task-viewer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 180px;
+    height: 100%;
+    background: #00cfff;
+    clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+    z-index: 0;
+}
+
+.skystemtaskmaster-stat-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    position: relative;
+    z-index: 2;
+    background: transparent;
+}
+
+.skystemtaskmaster-profile-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 3;
+}
+
+.skystemtaskmaster-bell {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.skystemtaskmaster-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff0080, #ff80bf);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.skystemtaskmaster-stat-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Stat Colors */
+.skystemtaskmaster-completed .skystemtaskmaster-stat-icon {
+    background-color: #ff00aa;
+    color: #fff;
+}
+
+.skystemtaskmaster-in-progress .skystemtaskmaster-stat-icon {
+    background-color: #fff;
+    color: #ff00aa;
+    border: 2px solid #ff00aa;
+}
+
+.skystemtaskmaster-not-started .skystemtaskmaster-stat-icon {
+    background-color: #fff;
+    color: #ff00aa;
+    border: 2px dashed #ff00aa;
+}
+
+.skystemtaskmaster-stat-box b {
+    margin-left: 2px;
+    font-weight: 700;
+}
+
+/* ==============================
+   Action Bar
+   ============================== */
+.skystemtaskmaster-action-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.skystemtaskmaster-action-left button {
+
+    border: none !important;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-right: 2px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+      display: inline-flex;       
+            
+    gap: 6px; 
+}
+.skystemtaskmaster-action-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+
+
+.skystemtaskmaster-action-left button:hover {
+    background: #f0f0f0;
+}
+
+.skystemtaskmaster-btn-new {
+    background: #00cfff !important;
+    color: #fff;
+    border: none;
+}
+
+
+
+
+
+
+
+
+.skystemtaskmaster-plus {
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+.skystemtaskmaster-action-right select {
+    padding: 6px 10px;
+    border-radius: 6px;
+   
+}
+.skystemtaskmaster-action-right select {
+    padding: 6px 30px 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ff00aa;
+    background-color: white;
+    
+   
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+  
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff0080' stroke-width='2'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    
+    cursor: pointer;
+}
+
+
+.skystemtaskmaster-action-right select:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff0080' stroke-width='2'%3E%3Cpath d='M7 14l5-5 5 5'/%3E%3C/svg%3E");
+}
+
+
+.skystemtaskmaster-action-right select::-ms-expand {
+    display: none;
+}
+/* ==============================
+   Checklist Title
+   ============================== */
+.skystemtaskmaster-checklist-title {
+    margin: 20px 0 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ==============================
+   Container
+   ============================== */
+.skystemtaskmaster-container {
+    display: flex;
+}
+
+/* ==============================
+   Sidebar
+   ============================== */
+.skystemtaskmaster-sidebar {
+    width: 60px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.skystemtaskmaster-sidebar div {
+    width: 40px;
+    height: 40px;
+    margin: 10px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #666;
+}
+
+.skystemtaskmaster-sidebar div:hover {
+    background: #f0f0f0;
+    border-radius: 8px;
+}
+
+/* ==============================
+   Table
+   ============================== */
+.skystemtaskmaster-table-wrapper {
+    flex: 1;
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    border-left: 8px solid #ff0080;
+}
+
+.skystemtaskmaster-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skystemtaskmaster-table-wrapper th,
+.skystemtaskmaster-table-wrapper td {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.skystemtaskmaster-table-wrapper thead {
+    background: #f7f7f7;
+}
+
+.skystemtaskmaster-table-wrapper th {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Task Name + Checkbox */
+.skystemtaskmaster-task-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.skystemtaskmaster-task-name input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Status Badges */
+.skystemtaskmaster-status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.skystemtaskmaster-status-not-started {
+    background: #fde2e4;
+    color: #e91e63;
+}
+
+.skystemtaskmaster-status-in-progress {
+    background: #fff3cd;
+    color: #ff9800;
+}
+
+.skystemtaskmaster-status-completed {
+    background: #e6f4ea;
+    color: #28a745;
+}
+
+/* Owner / Reviewer Badges */
+.skystemtaskmaster-badge {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: #fff;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.skystemtaskmaster-badge-pk {
+    background: #ff0080;
+}
+
+.skystemtaskmaster-badge-sm {
+    background: #00cfff;
+}
+
+/* Days */
+.skystemtaskmaster-days-positive {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.skystemtaskmaster-days-negative {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Sub Task Header Row */
+.skystemtaskmaster-subtask-header {
+    background: #f8d7e3;
+    font-weight: 600;
+}
+
+
+

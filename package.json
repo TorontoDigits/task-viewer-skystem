@@ -1,5 +1,5 @@
 {
-  "name": "task-manger",
+  "name": "skystem",
   "version": "1.0.0",
   "description": "",
   "main": "script.js",
@@ -9,5 +9,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }
