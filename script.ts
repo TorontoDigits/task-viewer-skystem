@@ -1,13 +1,7 @@
 "use strict";
-
 // ================================
 // INTERFACES AND TYPE DEFINITIONS
 // ================================
-
-// ================================
-// INTERFACES AND TYPE DEFINITIONS
-// ================================
-
 interface ColumnConfig {
     key: string;
     label: string;

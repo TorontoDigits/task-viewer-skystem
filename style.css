@@ -456,14 +456,6 @@
     color: #fff;
     border: none;
 }
-
-
-
-
-
-
-
-
 .skystemtaskmaster-plus {
     font-weight: bold;
     margin-left: 4px;
@@ -550,7 +542,13 @@
     background: #f0f0f0;
     border-radius: 8px;
 }
-
+.main-header-row {
+  font-size: 12px;
+}
+.task-row td {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
 /* ==============================
    Table
    ============================== */
