@@ -1,4 +1,5 @@
 "use strict";
+
 // ================================
 // INTERFACES AND TYPE DEFINITIONS
 // ================================
@@ -118,7 +119,6 @@ interface Account {
     [key: string]: any;
 }
 
-// FIXED: Use TaskComment instead of Comment to avoid DOM conflict
 interface TaskComment {
     id: string;
     author: string;
@@ -282,143 +282,6 @@ function initializeData(): void {
     console.log('Final subtasks count:', subtasks.length);
     updateCounts();
 }
-
-function addSublistStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        /* Main list row styles */
-        .main-list-row {
-            background-color: #f0f0f0 !important;
-            border-top: 2px solid #ff0080;
-            border-bottom: 2px solid #ff0080;
-        }
-        
-        .main-list-row td {
-            padding: 0 !important;
-            width: 100%;
-        }
-        
-        .list-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .list-icon { 
-            font-size: 20px; 
-            color: #ff0080;
-            flex-shrink: 0;
-        }
-        
-        .list-name { 
-            flex: 1; 
-            font-weight: bold; 
-            font-size: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        /* Sub list row styles */
-        .sub-list-row {
-            background-color: #f9f9f9 !important;
-        }
-        
-        .sub-list-row td {
-            padding: 0 !important;
-            width: 100%;
-        }
-        
-        .sublist-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 15px 10px 40px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .sublist-icon { 
-            font-size: 18px; 
-            color: #00cfff;
-            flex-shrink: 0;
-        }
-        
-        .sublist-name { 
-            flex: 1; 
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .add-task-btn {
-            background: #00cfff;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-        
-        .add-task-btn:hover { 
-            background: #00b5e0; 
-        }
-        
-        .add-sublist-btn {
-            background: #ff0080;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-        
-        .add-sublist-btn:hover { 
-            background: #e50072; 
-        }
-        
-        .collapse-icon, .collapse-sublist-icon {
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s;
-            flex-shrink: 0;
-        }
-        
-        .collapse-icon:hover, .collapse-sublist-icon:hover { 
-            transform: scale(1.2); 
-        }
-        
-        /* Table wrapper to prevent horizontal scroll */
-        .skystemtaskmaster-table-wrapper {
-            overflow-x: auto;
-            max-width: 100%;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-        
-        table {
-            min-width: 100%;
-            border-collapse: collapse;
-        }
-        
-        /* Ensure all cells have proper padding */
-        td, th {
-            padding: 12px 8px;
-            vertical-align: middle;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 // ================================
 // SIMPLIFIED FIX: OWNER, APPROVER, CREATED BY POPUP
 // ================================
@@ -443,7 +306,7 @@ function makeCellClickableForPopup(cell: HTMLElement, item: Task | Subtask, colu
     cell.title = `Click to change ${columnLabel}`;
     
     cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
+        cell.style.backgroundColor = '';
     });
     
     cell.addEventListener('mouseleave', () => {
@@ -469,79 +332,90 @@ function makeCellClickableForPopup(cell: HTMLElement, item: Task | Subtask, colu
     return newCell;
 }
 
-function showSimpleUserModal(item: Task | Subtask, cell: HTMLElement, columnKey: string, columnLabel: string, currentValue: string): void {
+function showSimpleUserModal(
+    item: Task | Subtask,
+    cell: HTMLElement,
+    columnKey: string,
+    columnLabel: string,
+    currentValue: string
+): void {
+
     const existingModal = document.getElementById('simpleUserModal');
     if (existingModal) existingModal.remove();
-    
+
     const modal = document.createElement('div');
     modal.id = 'simpleUserModal';
-    modal.className = 'modal';
-    modal.style.display = 'block';
-    modal.style.zIndex = '10000';
-    
+    modal.className = 'modal show';
+
     modal.innerHTML = `
-        <div class="modal-content" style="width: 400px; margin: 10% auto; padding: 20px; background: white; border-radius: 8px;">
-            <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer;">&times;</span>
-            <h3 style="color: #ff0080; margin-bottom: 15px;">Select ${columnLabel}</h3>
-            
-            <div style="margin: 20px 0;">
-                <div style="margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
-                    <div style="font-weight: 500;">${(item as any).name || 'Task'}</div>
+        <div class="modal-content simple-user-modal">
+            <span class="close">&times;</span>
+
+            <h3 class="modal-title">Select ${columnLabel}</h3>
+
+            <div class="modal-body">
+
+                <div class="task-box">
+                    <div class="task-name">
+                        ${(item as any).name || 'Task'}
+                    </div>
                 </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: 500;">Current ${columnLabel}</label>
-                    <div style="padding: 8px; background: #f0f0f0; border-radius: 4px; margin: 5px 0 15px 0;">
+
+                <div class="form-group">
+                    <label>Current ${columnLabel}</label>
+                    <div class="current-value">
                         ${currentValue}
                     </div>
                 </div>
-                
-                <input type="text" id="simpleUserSearch" placeholder="Search..." 
-                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 15px;">
-                
-                <div id="simpleUserList" style="max-height: 300px; overflow-y: auto;"></div>
+
+                <input 
+                    type="text" 
+                    id="simpleUserSearch" 
+                    class="search-input"
+                    placeholder="Search..."
+                >
+
+                <div id="simpleUserList" class="user-list"></div>
             </div>
-            
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button id="simpleUnassignBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Unassign</button>
-                <button id="simpleCloseBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+
+            <div class="modal-footer">
+                <button id="simpleUnassignBtn" class="btn btn-cancel">Unassign</button>
+                <button id="simpleCloseBtn" class="btn btn-save">Close</button>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
-    // Store references on window object (using type assertion)
+
     (window as any).simpleItem = item;
     (window as any).simpleCell = cell;
     (window as any).simpleColumnKey = columnKey;
     (window as any).simpleColumnLabel = columnLabel;
-    
-    // Populate user list
+
     updateSimpleUserList('', currentValue);
-    
-    // Close button
-    (modal.querySelector('.close') as HTMLElement).addEventListener('click', () => modal.remove());
-    (document.getElementById('simpleCloseBtn') as HTMLButtonElement).addEventListener('click', () => modal.remove());
-    
-    // Unassign button
-    (document.getElementById('simpleUnassignBtn') as HTMLButtonElement).addEventListener('click', () => {
+
+    modal.querySelector('.close')?.addEventListener('click', () => modal.remove());
+    document.getElementById('simpleCloseBtn')?.addEventListener('click', () => modal.remove());
+
+    document.getElementById('simpleUnassignBtn')?.addEventListener('click', () => {
         if ((window as any).simpleCell) {
             (window as any).simpleCell.textContent = '—';
-            updateSimpleField((window as any).simpleItem, (window as any).simpleColumnKey, '—');
+            updateSimpleField(
+                (window as any).simpleItem,
+                (window as any).simpleColumnKey,
+                '—'
+            );
             showNotification(`${columnLabel} unassigned`);
         }
         modal.remove();
     });
-    
-    // Search
-    (document.getElementById('simpleUserSearch') as HTMLInputElement).addEventListener('keyup', (e: Event) => {
+
+    document.getElementById('simpleUserSearch')?.addEventListener('keyup', (e: Event) => {
         const input = e.target as HTMLInputElement;
         updateSimpleUserList(input.value, currentValue);
     });
 }
 
-// Update user list
 function updateSimpleUserList(search: string, currentValue: string): void {
     const list = document.getElementById('simpleUserList');
     if (!list) return;
@@ -555,18 +429,17 @@ function updateSimpleUserList(search: string, currentValue: string): void {
         const isCurrent = user.initials === currentValue;
         return `
             <div class="user-item" data-initials="${user.initials}" data-name="${user.name}"
-                 style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; ${isCurrent ? 'background: #fff0f5;' : ''}">
+                 style="display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid ; cursor: pointer; ${isCurrent ? 'background: ;' : ''}">
                 <span style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: ${getUserColor(user.initials)}; color: white; text-align: center; line-height: 30px;">${user.initials}</span>
                 <div>
                     <div>${user.name}</div>
-                    <div style="font-size: 11px; color: #666;">${user.email} • ${user.role}</div>
+                    <div style="font-size: 11px; color: ;">${user.email} • ${user.role}</div>
                 </div>
-                ${isCurrent ? '<span style="color: #ff0080;">✓</span>' : ''}
+                ${isCurrent ? '<span style="color: ;">✓</span>' : ''}
             </div>
         `;
     }).join('');
     
-    // Add click handlers
     list.querySelectorAll('.user-item').forEach(el => {
         el.addEventListener('click', () => {
             const initials = (el as HTMLElement).dataset.initials;
@@ -768,7 +641,7 @@ function makeExtraUserCellClickable(cell: HTMLElement, item: Task | Subtask, col
     cell.title = titleText;
     
     cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
+        cell.style.backgroundColor = '';
         cell.style.transform = 'scale(1.02)';
     });
     
@@ -815,32 +688,32 @@ function showExtraUserSelectionModal(item: Task | Subtask, cell: HTMLElement, co
         <div id="extraUserSelectionModal" class="modal" style="display: block; z-index: 10000;">
             <div class="modal-content" style="width: 400px; position: relative; z-index: 10001;">
                 <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #999;">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 15px;">Select ${columnDisplayName}</h3>
+                <h3 style="color: ; margin-bottom: 15px;">Select ${columnDisplayName}</h3>
                 
                 <div style="margin: 20px 0;">
-                    <div style="margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
-                        <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Task:</div>
+                    <div style="margin-bottom: 20px; padding: 10px; background: ; border-radius: 6px;">
+                        <div style="font-size: 13px; color: ; margin-bottom: 5px;">Task:</div>
                         <div style="font-weight: 500;">${(item as any).name || (item as any).taskNameCell?.querySelector('span')?.textContent || 'Task'}</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Current ${columnDisplayName}</label>
-                        <div id="currentUserDisplay" style="padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 15px; ${currentValue !== '—' ? 'color: #ff0080; font-weight: 500;' : 'color: #999;'}">
+                        <div id="currentUserDisplay" style="padding: 8px; background:; border-radius: 4px; margin-bottom: 15px; ${currentValue !== '—' ? 'color: ; font-weight: 500;' : 'color: #999;'}">
                             ${currentValue || '—'}
                         </div>
                     </div>
                     
                     <div style="position: relative; margin-bottom: 15px;">
                         <input type="text" id="userSearchInput" placeholder="Search by name or initials..." 
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; font-size: 14px;">
+                               style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 4px; font-size: 14px;">
                     </div>
                     
-                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px;" id="userListContainer"></div>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px soli; border-radius: 4px;" id="userListContainer"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
-                    <button id="unassignUserBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Unassign</button>
-                    <button id="closeUserModalBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Close</button>
+                    <button id="unassignUserBtn" style="padding: 8px 16px; background:; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Unassign</button>
+                    <button id="closeUserModalBtn" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Close</button>
                 </div>
             </div>
         </div>
@@ -917,14 +790,14 @@ function updateUserListInModal(searchText: string, currentValue: string): void {
         const isCurrent = user.initials === currentValue;
         return `
             <div class="user-item" data-user='${JSON.stringify(user)}' 
-                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; ${isCurrent ? 'background-color: #fff0f5;' : ''}">
+                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; ${isCurrent ? 'background-color: ;' : ''}">
                 <span class="skystemtaskmaster-badge skystemtaskmaster-badge-${user.initials.toLowerCase()}" 
                       style="width: 32px; height: 32px; line-height: 32px; display: inline-block; border-radius: 50%; color: white; text-align: center; font-weight: bold; background: ${getUserColor(user.initials)};">${user.initials}</span>
                 <div style="flex: 1;">
                     <div style="font-weight: 500;">${user.name}</div>
-                    <div style="font-size: 12px; color: #666;">${user.email} • ${user.role}</div>
+                    <div style="font-size: 12px; color: ;">${user.email} • ${user.role}</div>
                 </div>
-                ${isCurrent ? '<span style="color: #ff0080; font-weight: bold;">✓</span>' : ''}
+                ${isCurrent ? '<span style="color: ; font-weight: bold;">✓</span>' : ''}
             </div>
         `;
     }).join('');
@@ -1003,58 +876,13 @@ function clearExtraUserReferences(): void {
     (window as any).currentExtraValue = null;
 }
 
-function initializeExtraUserColumns(): void {
-    console.log('Initializing extra user columns (Owner, Created By, Approver)...');
-    
-    const style = document.createElement('style');
-    style.id = 'extra-user-styles';
-    style.textContent = `
-        .extra-cell[data-column="taskOwner"],
-        .extra-cell[data-column="createdBy"],
-        .extra-cell[data-column="approver"] {
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-        }
-        
-        .extra-cell[data-column="taskOwner"]:hover,
-        .extra-cell[data-column="createdBy"]:hover,
-        .extra-cell[data-column="approver"]:hover {
-            background-color: #fff0f5 !important;
-            transform: scale(1.02);
-        }
-        
-        .user-item {
-            transition: all 0.2s;
-        }
-        
-        .user-item:hover {
-            background-color: #f5f5f5;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    const ownerCol = columnConfig.find(c => c.key === 'taskOwner');
-    const createdByCol = columnConfig.find(c => c.key === 'createdBy');
-    const approverCol = columnConfig.find(c => c.key === 'approver');
-    
-    if (ownerCol) ownerCol.visible = true;
-    if (createdByCol) createdByCol.visible = true;
-    if (approverCol) approverCol.visible = true;
-    
-    setTimeout(() => {
-        addExtraColumns();
-        addDataCells();
-        applyVisibility();
-    }, 100);
-}
-
 function makeStatusCellClickable(cell: HTMLElement, item: Task | Subtask): HTMLElement {
     cell.style.cursor = 'pointer';
     cell.style.transition = 'all 0.2s';
     cell.title = 'Click to change status';
     
     cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
+        cell.style.backgroundColor = '';
         cell.style.transform = 'scale(1.02)';
         cell.style.fontWeight = 'bold';
     });
@@ -1197,9 +1025,7 @@ function getTaskColumnValue(task: Task | undefined, columnKey: string): string {
     }
 }
 
-// Make sure status badges are clickable for all tasks
 function makeAllStatusClickable(): void {
-    // Regular status badges
     tasks.forEach(task => {
         if (task.statusBadge) {
             task.statusBadge.style.cursor = 'pointer';
@@ -1240,7 +1066,6 @@ function makeAllStatusClickable(): void {
         }
     });
     
-    // Also make extra column status cells clickable
     setTimeout(() => {
         document.querySelectorAll('.extra-cell[data-column="taskStatus"]').forEach(cellElement => {
             const cell = cellElement as HTMLElement;
@@ -1257,33 +1082,15 @@ function makeAllStatusClickable(): void {
     }, 200);
 }
 
-// Update the initialize function
 function initializeTaskStatus(): void {
     console.log('Initializing Task Status column...');
     
-    // Add styles for status cells
     const style = document.createElement('style');
     style.textContent = `
-        .extra-cell[data-column="taskStatus"] {
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        
-        .extra-cell[data-column="taskStatus"]:hover {
-            background-color: #fff0f5 !important;
-            transform: scale(1.02);
-            font-weight: bold;
-        }
-        
-        .extra-cell[data-column="taskStatus"]:empty:before {
-            content: "Not Started";
-            color: #999;
-        }
+     
     `;
     document.head.appendChild(style);
     
-    // Make all status clickable after a delay
     setTimeout(() => {
         makeAllStatusClickable();
     }, 1000);
@@ -1294,11 +1101,9 @@ function applyVisibility(): void {
     const subtaskHeader = document.getElementById('subtaskHeader') as HTMLTableRowElement;
     if (!mainHeader) return;
     
-    // Get all visible columns from config
     const visibleColumns = columnConfig.filter(col => col.visible).map(col => col.key);
     console.log('Visible columns:', visibleColumns);
     
-    // Define column indices for base columns
     const baseIndices: { [key: string]: number } = {
         taskName: 0, 
         acc: 1, 
@@ -1311,19 +1116,16 @@ function applyVisibility(): void {
         days: 8
     };
     
-    // Helper function to check if array contains a value (for ES5 compatibility)
     function arrayContains(arr: string[], value: string): boolean {
         return arr.indexOf(value) >= 0;
     }
     
-    // FIRST: Hide ALL columns in header
     for (let i = 0; i < mainHeader.children.length; i++) {
         if (mainHeader.children[i]) {
             (mainHeader.children[i] as HTMLElement).style.display = 'none';
         }
     }
     
-    // THEN: Show only visible base columns in header
     visibleColumns.forEach(key => {
         if (baseIndices[key] !== undefined) {
             if (mainHeader.children[baseIndices[key]]) {
@@ -1332,7 +1134,6 @@ function applyVisibility(): void {
         }
     });
     
-    // Show extra header columns that are visible
     document.querySelectorAll('.extra-column').forEach(thElement => {
         const th = thElement as HTMLElement;
         const key = th.getAttribute('data-column');
@@ -1343,7 +1144,6 @@ function applyVisibility(): void {
         }
     });
     
-    // Apply to task rows
     document.querySelectorAll('.task-row').forEach(rowElement => {
         const row = rowElement as HTMLTableRowElement;
         // Hide ALL cells first
@@ -1353,7 +1153,6 @@ function applyVisibility(): void {
             }
         }
         
-        // Show only visible base columns
         visibleColumns.forEach(key => {
             if (baseIndices[key] !== undefined) {
                 if (row.cells[baseIndices[key]]) {
@@ -1362,7 +1161,6 @@ function applyVisibility(): void {
             }
         });
         
-        // Show visible extra columns
         row.querySelectorAll('.extra-cell').forEach(cellElement => {
             const cell = cellElement as HTMLElement;
             const key = cell.getAttribute('data-column');
@@ -1374,24 +1172,19 @@ function applyVisibility(): void {
         });
     });
     
-    // Apply to subtask rows
     document.querySelectorAll('.subtask-row').forEach(rowElement => {
         const row = rowElement as HTMLTableRowElement;
-        // Hide ALL cells first
         for (let i = 0; i < row.cells.length; i++) {
             if (row.cells[i]) {
                 (row.cells[i] as HTMLElement).style.display = 'none';
             }
         }
         
-        // Task name is always first cell (index 0)
         if (row.cells[0]) {
             (row.cells[0] as HTMLElement).style.display = '';
         }
         
-        // Show other visible columns that apply to subtasks
         visibleColumns.forEach(key => {
-            // Check if this column applies to subtasks
             const col = columnConfig.find(c => c.key === key);
             if (col && col.forSubtask) {
                 // Map column key to cell index for subtasks
@@ -1411,7 +1204,6 @@ function applyVisibility(): void {
             }
         });
         
-        // Show visible extra columns for subtasks
         row.querySelectorAll('.extra-cell').forEach(cellElement => {
             const cell = cellElement as HTMLElement;
             const key = cell.getAttribute('data-column');
@@ -1424,7 +1216,6 @@ function applyVisibility(): void {
         });
     });
     
-    // Update list rows colspan
     setTimeout(() => {
         updateSublistRowsColspan();
     }, 50);
@@ -1434,8 +1225,6 @@ function updateSublistRowsColspan(): void {
     let visibleCount = 0;
     
     const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
-    
-    // Helper function for ES5 compatibility
     function arrayContains(arr: string[], value: string): boolean {
         return arr.indexOf(value) >= 0;
     }
@@ -1520,7 +1309,7 @@ function initializeColumnSorting(): void {
         });
         
         header.addEventListener('mouseenter', () => {
-            header.style.backgroundColor = '#fff0f5';
+            header.style.backgroundColor = '';
         });
         
         header.addEventListener('mouseleave', () => {
@@ -1540,7 +1329,6 @@ function getColumnKeyFromIndex(index: number): string | null {
         return columnMap[index];
     }
     
-    // For extra columns, get from data attribute
     const header = document.querySelectorAll('#mainHeader th')[index] as HTMLElement;
     if (header) {
         return header.getAttribute('data-column');
@@ -1551,22 +1339,18 @@ function getColumnKeyFromIndex(index: number): string | null {
 
 function toggleSort(columnKey: string, headerElement: HTMLElement): void {
     if (currentSort.column === columnKey) {
-        // Toggle direction
         currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
     } else {
         currentSort.column = columnKey;
         currentSort.direction = 'asc';
     }
     
-    // Update sort icons
     updateSortIcons(headerElement);
     
-    // Perform sort
     sortTableByColumn(columnKey, currentSort.direction);
 }
 
 function updateSortIcons(activeHeader: HTMLElement): void {
-    // Reset all icons
     document.querySelectorAll('#mainHeader th .sort-icon').forEach(iconElement => {
         const icon = iconElement as HTMLElement;
         icon.innerHTML = ' ↕️';
@@ -1574,12 +1358,11 @@ function updateSortIcons(activeHeader: HTMLElement): void {
         icon.style.color = '';
     });
     
-    // Update active header icon
     const activeIcon = activeHeader.querySelector('.sort-icon') as HTMLElement;
     if (activeIcon) {
         activeIcon.innerHTML = currentSort.direction === 'asc' ? ' ↑' : ' ↓';
         activeIcon.style.opacity = '1';
-        activeIcon.style.color = '#ff0080';
+        activeIcon.style.color = '';
     }
 }
 
@@ -1587,7 +1370,6 @@ function sortTableByColumn(columnKey: string, direction: 'asc' | 'desc'): void {
     const tbody = document.querySelector('tbody') as HTMLTableSectionElement;
     if (!tbody) return;
     
-    // Get all rows (excluding header rows)
     const rows = Array.from(tbody.querySelectorAll('tr')).filter(rowElement => {
         const row = rowElement as HTMLTableRowElement;
         return !row.classList.contains('main-list-row') && 
@@ -1595,25 +1377,22 @@ function sortTableByColumn(columnKey: string, direction: 'asc' | 'desc'): void {
                !row.classList.contains('skystemtaskmaster-subtask-header');
     }) as HTMLTableRowElement[];
     
-    // Separate tasks and subtasks
     const taskRows = rows.filter(row => row.classList.contains('task-row'));
     const subtaskRows = rows.filter(row => row.classList.contains('subtask-row'));
     
-    // Sort tasks
+    
     taskRows.sort((a, b) => {
         const aVal = getCellValueForSort(a, columnKey);
         const bVal = getCellValueForSort(b, columnKey);
         return compareValues(aVal, bVal, direction);
     });
     
-    // Sort subtasks
     subtaskRows.sort((a, b) => {
         const aVal = getCellValueForSort(a, columnKey);
         const bVal = getCellValueForSort(b, columnKey);
         return compareValues(aVal, bVal, direction);
     });
     
-    // Reorder rows in tbody
     const allRows = Array.from(tbody.children) as HTMLTableRowElement[];
     const headerRows = allRows.filter(row => 
         row.classList.contains('main-list-row') || 
@@ -1621,18 +1400,14 @@ function sortTableByColumn(columnKey: string, direction: 'asc' | 'desc'): void {
         row.classList.contains('skystemtaskmaster-subtask-header')
     );
     
-    // Clear tbody
     while (tbody.firstChild) {
         tbody.removeChild(tbody.firstChild);
     }
     
-    // Add header rows first
     headerRows.forEach(row => tbody.appendChild(row));
     
-    // Add sorted task rows
     taskRows.forEach(row => tbody.appendChild(row));
     
-    // Add sorted subtask rows
     subtaskRows.forEach(row => tbody.appendChild(row));
     
     showNotification(`Sorted by ${columnKey} (${direction === 'asc' ? 'Ascending' : 'Descending'})`);
@@ -1667,7 +1442,6 @@ function getCellValueForSort(row: HTMLTableRowElement, columnKey: string): strin
         return cell.textContent?.trim() || '';
     }
     
-    // Extra column
     const extraCell = Array.from(row.querySelectorAll('.extra-cell')).find(
         cellElement => (cellElement as HTMLElement).getAttribute('data-column') === columnKey
     ) as HTMLElement;
@@ -1681,7 +1455,6 @@ function compareValues(a: string | number, b: string | number, direction: 'asc' 
         return (a - b) * multiplier;
     }
     
-    // Convert to strings for comparison
     const aStr = String(a || '').toLowerCase();
     const bStr = String(b || '').toLowerCase();
     
@@ -1787,7 +1560,6 @@ function createSubListRow(subList: SubList, mainList: MainList): HTMLTableRowEle
     row.setAttribute('data-sublist-id', subList.id);
     row.setAttribute('data-mainlist-id', mainList.id);
     
-    // Add HTML with checkbox (with indentation)
     row.innerHTML = `
         <td colspan="9">
             <div class="sublist-header">
@@ -1804,7 +1576,6 @@ function createSubListRow(subList: SubList, mainList: MainList): HTMLTableRowEle
     
     subList.row = row;
     
-    // Insert after main list
     let insertAfter = mainList.row;
     while (insertAfter && insertAfter.nextSibling) {
         const next = insertAfter.nextSibling as HTMLTableRowElement;
@@ -1829,7 +1600,6 @@ function createSubListRow(subList: SubList, mainList: MainList): HTMLTableRowEle
         toggleSubList(subList);
     });
     
-    // Add checkbox functionality
     const checkbox = row.querySelector('.sublist-checkbox') as HTMLInputElement;
     checkbox.addEventListener('change', (e) => {
         e.stopPropagation();
@@ -1839,11 +1609,9 @@ function createSubListRow(subList: SubList, mainList: MainList): HTMLTableRowEle
     return row;
 }
 
-// Sublist checkbox handler function
 function handleSublistCheckbox(subList: SubList, checked: boolean): void {
     console.log(`Sublist ${subList.name} checkbox: ${checked}`);
     
-    // Update all tasks under this sublist
     subList.tasks.forEach(task => {
         if (task.row) {
             const taskCheckbox = task.row.querySelector('.task-checkbox') as HTMLInputElement;
@@ -1853,12 +1621,10 @@ function handleSublistCheckbox(subList: SubList, checked: boolean): void {
         }
     });
     
-    // Update parent main list checkbox (if all sublists are checked)
     const mainList = mainLists.find(m => m.id === subList.mainListId);
     if (mainList && mainList.row) {
         const mainCheckbox = mainList.row.querySelector('.list-checkbox') as HTMLInputElement;
         if (mainCheckbox) {
-            // Check if all sublists under this main list are checked
             const allSublistsChecked = mainList.subLists.every(s => {
                 const cb = s.row?.querySelector('.sublist-checkbox') as HTMLInputElement;
                 return cb ? cb.checked : false;
@@ -1885,13 +1651,10 @@ function handleSublistCheckbox(subList: SubList, checked: boolean): void {
     updateSelectedCount();
 }
 
-// Main list checkbox handler
 function handleMainListCheckbox(mainList: MainList, checked: boolean): void {
     console.log(`Main list ${mainList.name} checkbox: ${checked}`);
     
-    // Update all sublists under this main list
     mainList.subLists.forEach(subList => {
-        // Update sublist checkbox
         if (subList.row) {
             const sublistCheckbox = subList.row.querySelector('.sublist-checkbox') as HTMLInputElement;
             if (sublistCheckbox) {
@@ -1899,7 +1662,6 @@ function handleMainListCheckbox(mainList: MainList, checked: boolean): void {
             }
         }
         
-        // Update all tasks under this sublist
         subList.tasks.forEach(task => {
             if (task.row) {
                 const taskCheckbox = task.row.querySelector('.task-checkbox') as HTMLInputElement;
@@ -1911,30 +1673,24 @@ function handleMainListCheckbox(mainList: MainList, checked: boolean): void {
     });
     
     if (checked) {
-        // You could add logic to mark all tasks as completed
-        // Or just leave as is for selection only
+      
     }
     
     updateSelectedCount();
 }
 
-// Update selected count function
 function updateSelectedCount(): number {
     let selected = 0;
-    
-    // Count selected tasks
     tasks.forEach(task => {
         const checkbox = task.row.querySelector('.task-checkbox') as HTMLInputElement;
         if (checkbox && checkbox.checked) selected++;
     });
     
-    // Count selected subtasks
     subtasks.forEach(subtask => {
         const checkbox = subtask.row.querySelector('.subtask-checkbox') as HTMLInputElement;
         if (checkbox && checkbox.checked) selected++;
     });
     
-    // Update UI if you have a selected count display
     const selectedCountEl = document.getElementById('selectedCount');
     if (selectedCountEl) {
         selectedCountEl.textContent = selected.toString();
@@ -1945,7 +1701,6 @@ function updateSelectedCount(): number {
 }
 
 function showCreateSubListModal(mainList: MainList): void {
-    // Store current mainList in a data attribute
     let modal = document.getElementById('createSubListModal') as HTMLElement;
     
     if (!modal) {
@@ -1955,10 +1710,10 @@ function showCreateSubListModal(mainList: MainList): void {
         modal.innerHTML = `
             <div class="modal-content" style="width: 400px;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080;">Create Sub List</h3>
+                <h3 ">Create Sub List</h3>
                 <div style="margin: 20px 0;">
-                    <input type="text" id="subListNameInput" placeholder="Enter sub list name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 15px;">
-                    <button id="createSubListBtn" style="background: #ff0080; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">Create Sub List</button>
+                    <input type="text" id="subListNameInput" placeholder="Enter sub list name" style="width: 100%; padding: 10px; border: 1px solid ; border-radius: 4px; margin-bottom: 15px;">
+                    <button id="createSubListBtn">Create Sub List</button>
                 </div>
             </div>
         `;
@@ -1989,10 +1744,8 @@ function showCreateSubListModal(mainList: MainList): void {
         });
     }
     
-    // Set current main list ID in modal's data attribute
     modal.setAttribute('data-current-mainlist-id', mainList.id);
     
-    // Optional: Show which list we're adding to
     const modalTitle = modal.querySelector('h3') as HTMLElement;
     if (modalTitle) {
         modalTitle.textContent = `Create Sub List for "${mainList.name}"`;
@@ -2052,8 +1805,6 @@ function saveAllData(): void {
             linkedAccountsMap: {}, 
             taskComments: taskComments
         };
-        
-        // Save CDoc documents (completion documents) by ID
         tasks.forEach(task => {
             if (task.id) {
                 const docs = taskDocuments.get(task.row);
@@ -2074,7 +1825,6 @@ function saveAllData(): void {
             }
         });
         
-        // Save TDoc documents by ID
         tasks.forEach(task => {
             if (task.id) {
                 const docs = taskTDocDocuments.get(task.row);
@@ -2095,7 +1845,7 @@ function saveAllData(): void {
             }
         });
         
-        // Save Linked Accounts by ID
+
         tasks.forEach(task => {
             if (task.id) {
                 const accounts = taskAccounts.get(task.row);
@@ -2103,7 +1853,6 @@ function saveAllData(): void {
                     data.linkedAccountsMap[task.id] = accounts;
                     console.log('Saving Linked Accounts for task:', task.id, accounts);
                 } else if (task.linkedAccounts) {
-                    // Also check if accounts are stored in task object
                     data.linkedAccountsMap[task.id] = task.linkedAccounts;
                 }
             }
@@ -2134,7 +1883,6 @@ function loadAllData(): boolean {
         const data = JSON.parse(savedData) as SavedData;
         console.log('Loading data:', data);
         
-        // Clear existing data
         const tbody = document.getElementById('mainTableBody') as HTMLTableSectionElement;
         if (tbody) tbody.innerHTML = '';
         
@@ -2143,12 +1891,10 @@ function loadAllData(): boolean {
         tasks = [];
         subtasks = [];
         
-        // Clear existing document and account maps
         taskDocuments.clear();
         taskTDocDocuments.clear();
         taskAccounts.clear();
         
-        // Recreate main lists
         if (data.mainLists) {
             data.mainLists.forEach(mainListData => {
                 const mainList: MainList = {
@@ -2228,11 +1974,9 @@ function loadAllData(): boolean {
             });
         }
         
-        // Restore documents and accounts after all rows are created
         setTimeout(() => {
             console.log('Restoring documents and accounts...');
             
-            // Restore CDoc documents
             if (data.cdocDocuments) {
                 console.log('CDoc documents found:', Object.keys(data.cdocDocuments).length);
                 
@@ -2251,7 +1995,6 @@ function loadAllData(): boolean {
                 });
             }
             
-            // Restore TDoc documents
             if (data.tdocDocuments) {
                 console.log('TDoc documents found:', Object.keys(data.tdocDocuments).length);
                 
@@ -2270,13 +2013,11 @@ function loadAllData(): boolean {
                 });
             }
             
-            // Restore Linked Accounts
             if (data.linkedAccountsMap) {
                 console.log('Linked accounts found:', Object.keys(data.linkedAccountsMap).length);
                 
                 tasks.forEach(task => {
                     if (task.id) {
-                        // Check if accounts exist for this task ID
                         if (data.linkedAccountsMap[task.id]) {
                             console.log('Restoring accounts for task:', task.id, data.linkedAccountsMap[task.id]);
                             taskAccounts.set(task.row, data.linkedAccountsMap[task.id]);
@@ -2289,7 +2030,6 @@ function loadAllData(): boolean {
                     }
                 });
                 
-                // Also check for accounts stored with row ID as key
                 taskAccounts.forEach((value, key) => {
                     if (typeof key === 'string') {
                         console.log('Found accounts with string key:', key);
@@ -2297,12 +2037,10 @@ function loadAllData(): boolean {
                 });
             }
             
-            // Restore comments
             if (data.taskComments) {
                 Object.assign(taskComments, data.taskComments);
             }
             
-            // Update the UI to show restored documents and accounts
             console.log('Updating UI columns...');
             updateTDocColumn();
             updateCDocColumn();
@@ -2320,20 +2058,15 @@ function loadAllData(): boolean {
 }
 
 function findRowById(id: string): HTMLTableRowElement | null {
-    // Try to find by task ID
     const task = tasks.find(t => t.id === id);
     if (task && task.row) return task.row;
-    
-    // Try to find by data attribute
-    const row = document.querySelector(`[data-task-id="${id}"], [data-subtask-id="${id}"]`) as HTMLTableRowElement;
+        const row = document.querySelector(`[data-task-id="${id}"], [data-subtask-id="${id}"]`) as HTMLTableRowElement;
     if (row) return row;
     
     return null;
 }
 
-// Auto-save after any data modification
 function setupAutoSave(): void {
-    // Save after any operation that modifies data
     const originalCreateMainList = createMainList;
     const originalCreateSubList = createSubList;
     const originalCreateTask = createTask;
@@ -2363,7 +2096,6 @@ function setupAutoSave(): void {
         return result;
     };
     
-    // Also save on status changes, user assignments, etc.
     document.addEventListener('click', function(e) {
         const target = e.target as HTMLElement;
         if (target.closest('.skystemtaskmaster-status-badge') || 
@@ -2390,8 +2122,6 @@ function createSubList(mainList: MainList, subListName: string): SubList {
     return subList;
 }
 
-// Create SubList Row - NOTE: This is the main implementation, not a duplicate
-// The previous duplicate declaration has been removed
 
 function showCreateTaskModal(subList: SubList): void {
     let modal = document.getElementById('createTaskModal') as HTMLElement;
@@ -2403,26 +2133,26 @@ function showCreateTaskModal(subList: SubList): void {
         modal.innerHTML = `
             <div class="modal-content" style="width: 700px; max-height: 80vh; overflow-y: auto;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 20px;">Create Task</h3>
+                <h3 style="color: ; margin-bottom: 20px;">Create Task</h3>
                 
                 <div style="margin: 20px 0;">
                     <!-- Basic Info Section -->
-                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: ; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Basic Information</h4>
                         
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Task Name *</label>
-                            <input type="text" id="taskNameInput" placeholder="Enter task name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="taskNameInput" placeholder="Enter task name" >
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Task Number</label>
-                                <input type="text" id="taskNumberInput" value="TSK-${Math.floor(100 + Math.random() * 900)}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskNumberInput" value="TSK-${Math.floor(100 + Math.random() * 900)}" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Task Owner</label>
-                                <select id="taskOwnerInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskOwnerInput" >
                                     <option value="PK">PK - Palakh Khanna</option>
                                     <option value="SM">SM - Sarah Miller</option>
                                     <option value="MP">MP - Mel Preparer</option>
@@ -2437,7 +2167,7 @@ function showCreateTaskModal(subList: SubList): void {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Task Status</label>
-                                <select id="taskStatusInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskStatusInput" >
                                     <option value="Not Started">Not Started</option>
                                     <option value="In Progress">In Progress</option>
                                     <option value="Completed">Completed</option>
@@ -2448,7 +2178,7 @@ function showCreateTaskModal(subList: SubList): void {
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Reviewer</label>
-                                <select id="taskReviewerInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskReviewerInput" >
                                     <option value="PK">PK - Palakh Khanna</option>
                                     <option value="SM">SM - Sarah Miller</option>
                                     <option value="MP">MP - Mel Preparer</option>
@@ -2462,48 +2192,48 @@ function showCreateTaskModal(subList: SubList): void {
                     </div>
                     
                     <!-- Document Section -->
-                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: ; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Documents</h4>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Task Doc (TDoc)</label>
-                                <input type="text" id="taskTdocInput" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskTdocInput" value="0" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Completion Doc (CDoc)</label>
-                                <input type="text" id="taskCdocInput" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskCdocInput" value="0" >
                             </div>
                         </div>
                     </div>
                     
                     <!-- Dates Section -->
-                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: ; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Dates</h4>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Due Date</label>
-                                <input type="date" id="taskDueDateInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="date" id="taskDueDateInput" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Assignee Due Date</label>
-                                <input type="date" id="taskAssigneeDueDateInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="date" id="taskAssigneeDueDateInput" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Reviewer Due Date</label>
-                                <input type="date" id="taskReviewerDueDateInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="date" id="taskReviewerDueDateInput" >
                             </div>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Completion Date</label>
-                                <input type="date" id="taskCompletionDateInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="date" id="taskCompletionDateInput" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Recurrence Type</label>
-                                <select id="taskRecurrenceTypeInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskRecurrenceTypeInput" >
                                     <option value="None">None</option>
                                     <option value="Daily">Daily</option>
                                     <option value="Weekly">Weekly</option>
@@ -2516,13 +2246,13 @@ function showCreateTaskModal(subList: SubList): void {
                     </div>
                     
                     <!-- Additional Fields Section -->
-                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="background: ; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Additional Information</h4>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Approver</label>
-                                <select id="taskApproverInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskApproverInput" >
                                     <option value="—">None</option>
                                     <option value="PK">PK - Palakh Khanna</option>
                                     <option value="SM">SM - Sarah Miller</option>
@@ -2531,7 +2261,7 @@ function showCreateTaskModal(subList: SubList): void {
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Created By</label>
-                                <select id="taskCreatedByInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskCreatedByInput" >
                                     <option value="PK">PK - Palakh Khanna</option>
                                     <option value="SM">SM - Sarah Miller</option>
                                     <option value="MP">MP - Mel Preparer</option>
@@ -2542,7 +2272,7 @@ function showCreateTaskModal(subList: SubList): void {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Notifier</label>
-                                <select id="taskNotifierInput" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <select id="taskNotifierInput" >
                                     <option value="—">None</option>
                                     <option value="PK">PK - Palakh Khanna</option>
                                     <option value="SM">SM - Sarah Miller</option>
@@ -2551,39 +2281,37 @@ function showCreateTaskModal(subList: SubList): void {
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Linked Accounts</label>
-                                <input type="text" id="taskLinkedAccountsInput" placeholder="e.g., ACC-101, ACC-102" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskLinkedAccountsInput" placeholder="e.g., ACC-101, ACC-102" >
                             </div>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Custom Field #1</label>
-                                <input type="text" id="taskCustomField1Input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskCustomField1Input" >
                             </div>
                             <div>
                                 <label style="display: block; margin-bottom: 5px;">Custom Field #2</label>
-                                <input type="text" id="taskCustomField2Input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="text" id="taskCustomField2Input" >
                             </div>
                         </div>
                         
                         <div>
                             <label style="display: block; margin-bottom: 5px;">Comment</label>
-                            <textarea id="taskCommentInput" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Add any comments..."></textarea>
+                            <textarea id="taskCommentInput" rows="3"  placeholder="Add any comments..."></textarea>
                         </div>
                     </div>
                     
-                    <button id="createTaskBtn" style="background: #ff0080; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: 500;">Create Task</button>
+                    <button id="createTaskBtn" style="background: ; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: 500;">Create Task</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
         
-        // Close button
         (modal.querySelector('.close') as HTMLElement).addEventListener('click', () => {
             modal.style.display = 'none';
         });
         
-        // Create task button
         (document.getElementById('createTaskBtn') as HTMLButtonElement).addEventListener('click', () => {
             const currentSubListId = modal.getAttribute('data-current-sublist-id');
             const currentSubList = subLists.find(s => s.id === currentSubListId);
@@ -2646,16 +2374,13 @@ function showCreateTaskModal(subList: SubList): void {
         });
     }
     
-    // Set current sublist ID in modal's data attribute
     modal.setAttribute('data-current-sublist-id', subList.id);
     
-    // Update modal title
     const modalTitle = modal.querySelector('h3') as HTMLElement;
     if (modalTitle) {
         modalTitle.textContent = `Create Task for "${subList.name}"`;
     }
     
-    // Generate a random task number
     const taskNumberInput = document.getElementById('taskNumberInput') as HTMLInputElement;
     if (taskNumberInput) {
         taskNumberInput.value = 'TSK-' + Math.floor(100 + Math.random() * 900);
@@ -2664,14 +2389,11 @@ function showCreateTaskModal(subList: SubList): void {
     modal.style.display = 'block';
 }
 
-// Note: setupUploadHandlers function is defined later in the file
-// Only one definition exists
+
 
 function addExtraColumnsForRow(row: HTMLTableRowElement, task: Task): void {
-    // Remove existing extra cells
     row.querySelectorAll('.extra-cell').forEach(cell => cell.remove());
     
-    // Add extra cells with actual data
     columnConfig.forEach(col => {
         const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
         
@@ -2680,7 +2402,6 @@ function addExtraColumnsForRow(row: HTMLTableRowElement, task: Task): void {
             cell.className = 'extra-cell';
             cell.setAttribute('data-column', col.key);
             
-            // Get actual value based on column key
             let value = getTaskColumnValue(task, col.key);
             cell.textContent = value;
             cell.style.display = col.visible ? '' : 'none';
@@ -2718,11 +2439,9 @@ function createTaskRow(task: Task, subList: SubList): HTMLTableRowElement {
     const row = document.createElement('tr');
     row.className = 'task-row';
     
-    // Define recurring options
     const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
     const isRecurring = recurringOptions.indexOf(task.recurrenceType || '') >= 0;
     
-    // Add recurrence class based on recurrenceType
     if (isRecurring) {
         row.classList.add('recurring-task');
     } else {
@@ -2740,7 +2459,7 @@ function createTaskRow(task: Task, subList: SubList): HTMLTableRowElement {
                 <span>${task.name}</span>
             </div>
         </td>
-        <td><span style="color: #ff0080; font-weight: bold;">${task.acc}</span></td>
+        <td><span>${task.acc}</span></td>
         <td class="tdoc-cell">${task.tdoc}</td>
         <td class="skystemtaskmaster-editable due-date">${formattedDueDate}</td>
         <td><span class="skystemtaskmaster-status-badge skystemtaskmaster-status-not-started">${task.status}</span></td>
@@ -2782,69 +2501,6 @@ function createTaskRow(task: Task, subList: SubList): HTMLTableRowElement {
     return row;
 }
 
-// Add styles for recurrence indicators
-function addRecurrenceStyles(): void {
-    // Check if styles already exist
-    if (document.getElementById('recurrence-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'recurrence-styles';
-    style.textContent = `
-        /* Recurring tasks - Gray bar */
-        .task-row.recurring-task {
-            border-left: 4px solid #808080 !important;
-        }
-        
-        /* Non-recurring tasks - Blue bar */
-        .task-row.non-recurring-task {
-            border-left: 4px solid #00cfff !important;
-        }
-        
-        /* Subtasks styling */
-        .subtask-row.recurring-task {
-            border-left: 4px solid #808080 !important;
-        }
-        
-        .subtask-row.non-recurring-task {
-            border-left: 4px solid #00cfff !important;
-        }
-        
-        /* Ensure the border doesn't get overridden */
-        .task-row, .subtask-row {
-            position: relative;
-            transition: border-left-width 0.2s;
-        }
-        
-        /* Hover effect to emphasize the indicator */
-        .task-row:hover, .subtask-row:hover {
-            border-left-width: 6px !important;
-        }
-        
-        /* Style for recurrence column cells */
-        .extra-cell[data-column="recurrenceType"] {
-            font-weight: 500;
-        }
-        
-        /* Recurring values in column */
-        .extra-cell[data-column="recurrenceType"] {
-            color: #666;
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:contains("Every Period"),
-        .extra-cell[data-column="recurrenceType"]:contains("Quarterly"),
-        .extra-cell[data-column="recurrenceType"]:contains("Annual") {
-            color: #808080;
-            font-weight: 600;
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:contains("Multiple"),
-        .extra-cell[data-column="recurrenceType"]:contains("Custom") {
-            color: #00cfff;
-            font-weight: 600;
-        }
-    `;
-    document.head.appendChild(style);
-}
 
 function toggleMainList(mainList: MainList): void {
     mainList.isExpanded = !mainList.isExpanded;
@@ -2920,7 +2576,7 @@ function createNewTask(taskName: string, acc: string, tdoc: string, owner: strin
                 <span>${taskName}</span>
             </div>
         </td>
-        <td><span style="color: #ff0080; font-weight: bold;">${acc}</span></td>
+        <td><span">${acc}</span></td>
         <td class="tdoc-cell">${tdoc}</td>
         <td class="skystemtaskmaster-editable due-date" contenteditable="true">${formattedDueDate}</td>
         <td><span class="skystemtaskmaster-status-badge skystemtaskmaster-status-not-started">Not Started</span></td>
@@ -3031,7 +2687,6 @@ function createNewSubtask(): void {
         const newRow = document.createElement('tr');
         newRow.className = 'subtask-row';
         
-        // FIX: Generate a proper unique ID
         const subtaskId = 'subtask_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         newRow.setAttribute('data-subtask-id', subtaskId);
         
@@ -3165,10 +2820,7 @@ function initializeDragAndDrop(): void {
     });
     const subtaskHeader = document.getElementById('subtaskHeader');
     if (subtaskHeader) {
-        // Do something with subtaskHeader if needed
     }
-    // Add drag styles
-    addDragStyles();
 }
 
 // ================================
@@ -3181,13 +2833,11 @@ function initializeThreeDotsMenu(): void {
     
     if (!threeDotsBtn || !dropdown) return;
     
-    // Toggle dropdown
     threeDotsBtn.addEventListener('click', (e: MouseEvent) => {
         e.stopPropagation();
         dropdown.classList.toggle('show');
     });
     
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e: MouseEvent) => {
         const target = e.target as HTMLElement;
         if (!threeDotsBtn.contains(target) && !dropdown.contains(target)) {
@@ -3195,7 +2845,6 @@ function initializeThreeDotsMenu(): void {
         }
     });
     
-    // Download submenu items
     document.querySelectorAll('.submenu-item').forEach(item => {
         item.addEventListener('click', (e: Event) => {
             e.stopPropagation();
@@ -3225,13 +2874,11 @@ function initializeThreeDotsMenu(): void {
         }
     }
     
-    // Delete option
     (document.getElementById('dropdownDelete') as HTMLElement)?.addEventListener('click', () => {
         deleteSelectedItems();
         dropdown.classList.remove('show');
     });
     
-    // Custom Grid option
     (document.getElementById('dropdownCustomGrid') as HTMLElement)?.addEventListener('click', () => {
         showCustomizeGridModal();
         dropdown.classList.remove('show');
@@ -3259,17 +2906,12 @@ function handleDownload(format: string | undefined): void {
 
 function deleteSelectedItems(): number {
     let deleted = 0;
-    
-    // Delete lists first (they will delete their children too)
-    // Delete main lists
-    for (let i = mainLists.length - 1; i >= 0; i--) {
+       for (let i = mainLists.length - 1; i >= 0; i--) {
         const mainList = mainLists[i];
         const checkbox = mainList.row?.querySelector('.list-checkbox') as HTMLInputElement;
         
         if (checkbox && checkbox.checked) {
-            // Delete all sublists and tasks under this main list
             mainList.subLists.forEach(subList => {
-                // Delete tasks in this sublist
                 for (let j = tasks.length - 1; j >= 0; j--) {
                     if (tasks[j].subListId === subList.id) {
                         tasks[j].row?.remove();
@@ -3278,18 +2920,15 @@ function deleteSelectedItems(): number {
                     }
                 }
                 
-                // Remove sublist from subLists array
                 const subIndex = subLists.findIndex(s => s.id === subList.id);
                 if (subIndex !== -1) {
                     subLists.splice(subIndex, 1);
                     deleted++;
                 }
                 
-                // Remove sublist row
                 subList.row?.remove();
             });
             
-            // Remove main list row
             mainList.row?.remove();
             mainLists.splice(i, 1);
             deleted++;
@@ -3303,7 +2942,6 @@ function deleteSelectedItems(): number {
         const checkbox = subList.row?.querySelector('.sublist-checkbox') as HTMLInputElement;
         
         if (checkbox && checkbox.checked) {
-            // Delete tasks in this sublist
             for (let j = tasks.length - 1; j >= 0; j--) {
                 if (tasks[j].subListId === subList.id) {
                     tasks[j].row?.remove();
@@ -3312,14 +2950,12 @@ function deleteSelectedItems(): number {
                 }
             }
             
-            // Remove from parent main list
             const mainList = mainLists.find(m => m.id === subList.mainListId);
             if (mainList) {
                 const subIndex = mainList.subLists.findIndex(s => s.id === subList.id);
                 if (subIndex !== -1) mainList.subLists.splice(subIndex, 1);
             }
             
-            // Remove sublist
             subList.row?.remove();
             subLists.splice(i, 1);
             deleted++;
@@ -3332,7 +2968,6 @@ function deleteSelectedItems(): number {
         const checkbox = task.row.querySelector('.task-checkbox') as HTMLInputElement;
         
         if (checkbox && checkbox.checked) {
-            // Remove from parent sublist
             const subList = subLists.find(s => s.id === task.subListId);
             if (subList) {
                 const taskIndex = subList.tasks.findIndex(t => t.id === task.id);
@@ -3345,7 +2980,6 @@ function deleteSelectedItems(): number {
         }
     }
     
-    // Delete subtasks
     for (let i = subtasks.length - 1; i >= 0; i--) {
         const subtask = subtasks[i];
         const checkbox = subtask.row.querySelector('.subtask-checkbox') as HTMLInputElement;
@@ -3375,7 +3009,6 @@ function downloadAsJson(): void {
     const data: any[] = [];
     const rows = table.querySelectorAll('tr');
     
-    // Get headers
     const headers: string[] = [];
     const headerRow = rows[0].querySelectorAll('th');
     headerRow.forEach(th => {
@@ -3384,7 +3017,6 @@ function downloadAsJson(): void {
         }
     });
     
-    // Get data rows
     for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.querySelectorAll('td');
@@ -3406,7 +3038,6 @@ function downloadAsJson(): void {
         }
     }
     
-    // Convert to JSON and download
     const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
@@ -3443,16 +3074,7 @@ function showNotification(message: string): void {
     notification = document.createElement('div');
     notification.className = 'skystemtaskmaster-notification';
     notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #ff0080;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        z-index: 2000;
-        animation: slideIn 0.3s ease;
+        
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
@@ -3463,7 +3085,6 @@ function showNotification(message: string): void {
     }, 3000);
 }
 
-// Enhanced updateCounts function with better status detection
 function updateCounts(): void {
     console.log('updateCounts called');
     
@@ -3484,7 +3105,6 @@ function updateCounts(): void {
         });
     }
     
-    // Check DOM directly as fallback
     if (completed === 0 && inProgress === 0 && notStarted === 0) {
         console.log('Checking DOM directly for status badges...');
         document.querySelectorAll('.skystemtaskmaster-status-badge').forEach(badge => {
@@ -3510,7 +3130,6 @@ function updateCounts(): void {
     
     if (completedEl) {
         completedEl.innerText = completed.toString();
-        // Add animation
         completedEl.style.transform = 'scale(1.2)';
         setTimeout(() => completedEl.style.transform = 'scale(1)', 200);
     }
@@ -3592,8 +3211,8 @@ function showCustomizeGridModal(): void {
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button id="resetGridBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Reset</button>
-                    <button id="saveGridBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Changes</button>
+                    <button id="resetGridBtn" ;">Reset</button>
+                    <button id="saveGridBtn" ">Save Changes</button>
                 </div>
             </div>
         `;
@@ -3613,14 +3232,12 @@ function showCustomizeGridModal(): void {
                 if (checkbox && !col.mandatory) col.visible = checkbox.checked;
             });
             
-            // Save to localStorage
             saveColumnVisibility();
             
             addExtraColumns();
             addDataCells();
             applyVisibility();
             
-            // Update all sub-list rows colspan
             updateSublistRowsColspan();
             
             modal.style.display = 'none';
@@ -3672,11 +3289,10 @@ function updateTDocColumn(): void {
         icon.className = docs.length > 0 ? 'fas fa-file-alt' : 'fas fa-file-alt';
         icon.style.cssText = `
             font-size: 20px;
-            color: ${docs.length > 0 ? '#00cfff' : '#999'};
+            color: ${docs.length > 0 ? '' : ''};
             transition: all 0.2s;
         `;
         
-        // Add "plus" effect for empty state
         if (docs.length === 0) {
             icon.style.opacity = '0.7';
             icon.title = 'Click to upload documents';
@@ -3686,42 +3302,23 @@ function updateTDocColumn(): void {
         
         iconContainer.appendChild(icon);
         
-        // Add count badge if documents exist
         if (docs.length > 0) {
             const badge = document.createElement('span');
             badge.className = 'tdoc-badge';
             badge.textContent = docs.length.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background: #00cfff;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                
             `;
             iconContainer.appendChild(badge);
         } else {
             const plusIcon = document.createElement('i');
             plusIcon.className = 'fas fa-plus-circle';
             plusIcon.style.cssText = `
-                position: absolute;
-                bottom: -5px;
-                right: -5px;
-                font-size: 12px;
-                color: #ff0080;
-                background: white;
-                border-radius: 50%;
+                
             `;
             iconContainer.appendChild(plusIcon);
         }
         
-        // Add click handler
         iconContainer.onclick = (e: MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
@@ -3729,7 +3326,6 @@ function updateTDocColumn(): void {
             showTDocDocumentManager(task.row);
         };
         
-        // Add hover effects
         iconContainer.onmouseenter = () => {
             icon.style.transform = 'scale(1.1)';
             icon.style.filter = 'drop-shadow(0 2px 4px rgba(0,207,255,0.3))';
@@ -3766,7 +3362,7 @@ function updateTDocColumn(): void {
         icon.className = 'fas fa-file-alt';
         icon.style.cssText = `
             font-size: 20px;
-            color: ${docs.length > 0 ? '#00cfff' : '#999'};
+            color: ${docs.length > 0 ? '' : ''};
             transition: all 0.2s;
         `;
         
@@ -3784,30 +3380,14 @@ function updateTDocColumn(): void {
             badge.className = 'tdoc-badge';
             badge.textContent = docs.length.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background: #00cfff;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
+              
             `;
             iconContainer.appendChild(badge);
         } else {
             const plusIcon = document.createElement('i');
             plusIcon.className = 'fas fa-plus-circle';
             plusIcon.style.cssText = `
-                position: absolute;
-                bottom: -5px;
-                right: -5px;
-                font-size: 12px;
-                color: #ff0080;
-                background: white;
-                border-radius: 50%;
+                
             `;
             iconContainer.appendChild(plusIcon);
         }
@@ -3830,67 +3410,7 @@ function updateTDocColumn(): void {
     });
 }
 
-function addDocumentStyles(): void {
-    // Check if styles already exist
-    if (document.getElementById('document-icon-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'document-icon-styles';
-    style.textContent = `
-        .cdoc-icon, .tdoc-icon {
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            position: relative !important;
-            display: inline-block !important;
-            user-select: none !important;
-        }
-        
-        .cdoc-icon:hover, .tdoc-icon:hover {
-            transform: scale(1.15) !important;
-            filter: drop-shadow(0 2px 6px rgba(255,0,128,0.4)) !important;
-        }
-        
-        .tdoc-icon:hover {
-            filter: drop-shadow(0 2px 6px rgba(0,207,255,0.4)) !important;
-        }
-        
-        .doc-badge, .doc-badge-tdoc {
-            position: absolute !important;
-            top: -8px !important;
-            right: -8px !important;
-            color: white !important;
-            font-size: 10px !important;
-            font-weight: bold !important;
-            padding: 2px 5px !important;
-            border-radius: 10px !important;
-            min-width: 15px !important;
-            text-align: center !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-            z-index: 10 !important;
-            animation: badgePop 0.2s ease !important;
-        }
-        
-        .doc-badge {
-            background: #ff0080 !important;
-        }
-        
-        .doc-badge-tdoc {
-            background: #00cfff !important;
-        }
-        
-        @keyframes badgePop {
-            from {
-                transform: scale(0);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
+
 
 function showTDocDocumentManager(taskRow: HTMLTableRowElement): void {
     const docs = taskTDocDocuments.get(taskRow) || [];
@@ -3903,25 +3423,25 @@ function showTDocDocumentManager(taskRow: HTMLTableRowElement): void {
         modal.innerHTML = `
             <div class="modal-content" style="width: 800px; max-width: 95%; max-height: 80vh; overflow-y: auto;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 20px;">📄 TDoc Document Manager</h3>
+                <h3 >📄 TDoc Document Manager</h3>
                 
-                <div style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+                <div style="margin-bottom: 30px; background: ; padding: 20px; border-radius: 8px;">
                     <h4 style="margin-bottom: 15px; color: #333;">Upload New Documents</h4>
                     
-                    <div id="tdocDropArea" style="border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s;">
+                    <div id="tdocDropArea" style="border: 2px dashed ; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s;">
                         <div style="font-size: 32px; margin-bottom: 5px;"><i class="fa-solid fa-folder-open"></i></div>
-                        <div style="color: #666; margin-bottom: 5px;">Drag files here or</div>
-                        <button id="tdocBrowseFileBtn" style="background: #ff0080; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Browse</button>
+                        <div style="color: ; margin-bottom: 5px;">Drag files here or</div>
+                        <button id="tdocBrowseFileBtn" style="background: ; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Browse</button>
                         <input type="file" id="tdocFileInput" style="display: none;" multiple>
                     </div>
                     
                     <div id="tdocSelectedFilesList" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 10px; background: white; margin-bottom: 10px; display: none;">
-                        <div style="font-weight: 500; margin-bottom: 8px; color: #666;">Selected Files:</div>
+                        <div style="font-weight: 500; margin-bottom: 8px; color: ;">Selected Files:</div>
                         <div id="tdocFilesContainer"></div>
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end;">
-                        <button id="tdocUploadSelectedBtn" style="padding: 6px 16px; background: #00cfff; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Upload Files</button>
+                        <button id="tdocUploadSelectedBtn" style="padding: 6px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Upload Files</button>
                     </div>
                 </div>
                 
@@ -3931,7 +3451,7 @@ function showTDocDocumentManager(taskRow: HTMLTableRowElement): void {
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                    <button id="tdocCloseManagerBtn" style="padding: 8px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                    <button id="tdocCloseManagerBtn" style="padding: 8px 20px; background:; border: none; border-radius: 4px; cursor: pointer;">Close</button>
                 </div>
             </div>
         `;
@@ -3976,10 +3496,10 @@ function renderTDocDocumentsList(docs: DocumentFile[], taskRow: HTMLTableRowElem
         <table style="width: 100%; border-collapse: collapse;">
             <thead style="background: #f5f5f5; position: sticky; top: 0;">
                 <tr>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Name</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Size</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Upload Date</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">Actions</th>
+                    <th">Name</th>
+                    <th">Size</th>
+                    <th">Upload Date</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid ;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -3997,7 +3517,7 @@ function renderTDocDocumentsList(docs: DocumentFile[], taskRow: HTMLTableRowElem
                             <span style="color: #999; font-size: 11px;">${doc.uploadDate.toLocaleTimeString()}</span>
                         </td>
                         <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                            <button class="tdoc-view-doc-btn" data-index="${index}" style="background: none; border: none; color: #ff0080; cursor: pointer; margin: 0 5px; font-size: 18px;" title="View">👁️</button>
+                            <button class="tdoc-view-doc-btn" data-index="${index}" style="background: none; border: none; color: ; cursor: pointer; margin: 0 5px; font-size: 18px;" title="View">👁️</button>
                             <button class="tdoc-delete-doc-btn" data-index="${index}" style="background: none; border: none; color: #dc3545; cursor: pointer; margin: 0 5px; font-size: 18px;" title="Delete">🗑</button>
                         </td>
                     </tr>
@@ -4029,19 +3549,19 @@ function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElemen
     
     dropArea.addEventListener('dragover', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ff0080';
-        dropArea.style.backgroundColor = '#fff0f5';
+        dropArea.style.borderColor = '';
+        dropArea.style.backgroundColor = '';
     });
     
     dropArea.addEventListener('dragleave', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ddd';
+        dropArea.style.borderColor = '';
         dropArea.style.backgroundColor = 'transparent';
     });
     
     dropArea.addEventListener('drop', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ddd';
+        dropArea.style.borderColor = '';
         dropArea.style.backgroundColor = 'transparent';
         const files = Array.from(e.dataTransfer?.files || []);
         selectedFiles = [...selectedFiles, ...files];
@@ -4177,16 +3697,16 @@ function showTDocDeleteConfirmation(taskRow: HTMLTableRowElement, index: number)
         confirmModal.innerHTML = `
             <div class="modal-content" style="width: 350px;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080;">Confirm Delete</h3>
+                <h3 style="color: ;">Confirm Delete</h3>
                 
                 <div style="margin: 20px 0; text-align: center;">
                     <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
                     <p style="margin-bottom: 5px;">Are you sure you want to delete this document?</p>
-                    <p style="color: #666; font-size: 13px;" id="tdocDocNameDisplay"></p>
+                    <p style="color: ; font-size: 13px;" id="tdocDocNameDisplay"></p>
                 </div>
                 
                 <div style="display: flex; justify-content: center; gap: 10px;">
-                    <button id="tdocCancelDeleteBtn" style="padding: 8px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="tdocCancelDeleteBtn" style="padding: 8px 20px; background:; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
                     <button id="tdocConfirmDeleteBtn" style="padding: 8px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                 </div>
             </div>
@@ -4257,7 +3777,7 @@ function addTDocStyles(): void {
     style.textContent = `
         .tdoc-count {
             cursor: pointer;
-            color: #ff0080;
+            color: ;
             font-weight: bold;
             font-size: 14px;
             padding: 4px 8px;
@@ -4267,7 +3787,7 @@ function addTDocStyles(): void {
         
         .tdoc-count:hover {
             transform: scale(1.1);
-            background-color: #fff0f5;
+            background-color: ;
             border-radius: 4px;
         }
         
@@ -4280,12 +3800,12 @@ function addTDocStyles(): void {
         }
         
         #tdocDropArea.drag-over {
-            border-color: #ff0080 !important;
-            background-color: #fff0f5 !important;
+            border-color:  !important;
+            background-color:  !important;
         }
         
         #tdocDocumentsListContainer tr:hover {
-            background-color: #f9f9f9;
+            background-color: ;
         }
         
         .tdoc-view-doc-btn, .tdoc-delete-doc-btn {
@@ -4334,7 +3854,7 @@ function showDownloadOptions(): void {
                 <div style="display: flex; flex-direction: column; gap: 15px; margin: 20px 0;">
                     <button id="downloadExcelBtn" style="padding: 12px; background: #1D6F42; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">📊 Excel</button>
                     <button id="downloadPdfBtn" style="padding: 12px; background: #D32F2F; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">📄 PDF</button>
-                    <button id="downloadCsvBtn" style="padding: 12px; background: #00cfff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">📑 CSV</button>
+                    <button id="downloadCsvBtn" style="padding: 12px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">📑 CSV</button>
                     <button id="downloadJsonBtn" style="padding: 12px; background: #9c27b0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">🔧 JSON</button>
                 </div>
             </div>
@@ -4429,7 +3949,7 @@ function downloadAsPdf(): void {
             <style>
                 body { font-family: Arial, sans-serif; padding: 20px; }
                 table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th, td { border: 1px solid ; padding: 8px; text-align: left; }
                 th { background-color: #f2f2f2; }
                 ${styleText}
             </style>
@@ -4491,12 +4011,12 @@ function showFilterPanel(): void {
     filterModal.innerHTML = `
         <div class="modal-content" style="width: 400px;">
             <span class="close">&times;</span>
-            <h3 style="color: #ff0080; margin-bottom: 20px;">Filter Tasks</h3>
+            <h3 style="color: ; margin-bottom: 20px;">Filter Tasks</h3>
             
             <div style="margin: 20px 0;">
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Status</label>
-                    <select id="filterStatus" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="filterStatus" >
                         <option value="all">All Status</option>
                         <option value="Not Started">Not Started</option>
                         <option value="In Progress">In Progress</option>
@@ -4509,7 +4029,7 @@ function showFilterPanel(): void {
                 
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Owner</label>
-                    <select id="filterOwner" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="filterOwner" >
                         <option value="all">All Owners</option>
                         <option value="PK">PK - Palakh Khanna</option>
                         <option value="SM">SM - Sarah Miller</option>
@@ -4523,7 +4043,7 @@ function showFilterPanel(): void {
                 
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Reviewer</label>
-                    <select id="filterReviewer" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="filterReviewer" >
                         <option value="all">All Reviewers</option>
                         <option value="PK">PK - Palakh Khanna</option>
                         <option value="SM">SM - Sarah Miller</option>
@@ -4537,7 +4057,7 @@ function showFilterPanel(): void {
                 
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 500;">Due Date</label>
-                    <select id="filterDueDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="filterDueDate" >
                         <option value="all">All Dates</option>
                         <option value="overdue">Overdue</option>
                         <option value="today">Due Today</option>
@@ -4549,8 +4069,8 @@ function showFilterPanel(): void {
             </div>
             
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                <button id="clearFilterBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Clear</button>
-                <button id="applyFilterBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply Filter</button>
+                <button id="clearFilterBtn" style="padding: 8px 16px; background:; border: none; border-radius: 4px; cursor: pointer;">Clear</button>
+                <button id="applyFilterBtn" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply Filter</button>
             </div>
         </div>
     `;
@@ -4833,7 +4353,7 @@ function showSortOptions(): void {
                 <div style="margin: 20px 0;">
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Sort By</label>
-                        <select id="sortBy" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <select id="sortBy" >
                             <option value="taskName">Task Name</option>
                             <option value="dueDate">Due Date</option>
                             <option value="status">Status</option>
@@ -4845,7 +4365,7 @@ function showSortOptions(): void {
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Order</label>
-                        <select id="sortOrder" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <select id="sortOrder" >
                             <option value="asc">Ascending (A-Z)</option>
                             <option value="desc">Descending (Z-A)</option>
                         </select>
@@ -4853,7 +4373,7 @@ function showSortOptions(): void {
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button id="applySortBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply Sort</button>
+                    <button id="applySortBtn" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply Sort</button>
                 </div>
             </div>
         `;
@@ -5042,7 +4562,7 @@ function addAccountColumnToTasks(): void {
                     accountBadge.title = account.accountName || `Account ${account.accountNumber}`;
                     accountBadge.style.cssText = `
                         display: inline-block;
-                        background: #ff0080;
+                        background: ;
                         color: white;
                         padding: 2px 8px;
                         border-radius: 12px;
@@ -5060,7 +4580,7 @@ function addAccountColumnToTasks(): void {
                     
                     accountBadge.addEventListener('mouseleave', () => {
                         accountBadge.style.transform = 'scale(1)';
-                        accountBadge.style.backgroundColor = '#ff0080';
+                        accountBadge.style.backgroundColor = '';
                     });
                     
                     accountBadge.addEventListener('click', (e: MouseEvent) => {
@@ -5080,8 +4600,8 @@ function addAccountColumnToTasks(): void {
                     display: inline-block;
                     width: 20px;
                     height: 20px;
-                    background: #f0f0f0;
-                    color: #ff0080;
+                    background:;
+                    color: ;
                     border-radius: 50%;
                     text-align: center;
                     line-height: 20px;
@@ -5093,14 +4613,14 @@ function addAccountColumnToTasks(): void {
                 
                 addIcon.addEventListener('mouseenter', () => {
                     addIcon.style.transform = 'scale(1.1)';
-                    addIcon.style.backgroundColor = '#ff0080';
+                    addIcon.style.backgroundColor = '';
                     addIcon.style.color = 'white';
                 });
                 
                 addIcon.addEventListener('mouseleave', () => {
                     addIcon.style.transform = 'scale(1)';
                     addIcon.style.backgroundColor = '#f0f0f0';
-                    addIcon.style.color = '#ff0080';
+                    addIcon.style.color = '';
                 });
                 
                 addIcon.addEventListener('click', (e: MouseEvent) => {
@@ -5130,7 +4650,7 @@ function showAccountDetails(account: Account, taskRow: HTMLTableRowElement, task
     tooltip.style.cssText = `
         position: absolute;
         background: white;
-        border: 1px solid #ddd;
+        border: 1px solid ;
         border-radius: 8px;
         padding: 15px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
@@ -5140,16 +4660,16 @@ function showAccountDetails(account: Account, taskRow: HTMLTableRowElement, task
     `;
     
     tooltip.innerHTML = `
-        <div style="font-weight: bold; color: #ff0080; font-size: 16px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+        <div style="font-weight: bold; color: ; font-size: 16px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
             ${account.accountNumber || 'Account'}
         </div>
         <div style="margin: 8px 0; color: #333;">
             <div style="font-size: 14px; margin-bottom: 4px;">${account.accountName || 'Account'}</div>
-            ${account.accountType ? `<div style="font-size: 12px; color: #666; margin-bottom: 2px;">Type: ${account.accountType}</div>` : ''}
-            ${account.riskRating ? `<div style="font-size: 12px; color: #666;">Risk: ${account.riskRating}</div>` : ''}
+            ${account.accountType ? `<div style="font-size: 12px; color: ; margin-bottom: 2px;">Type: ${account.accountType}</div>` : ''}
+            ${account.riskRating ? `<div style="font-size: 12px; color: ;">Risk: ${account.riskRating}</div>` : ''}
         </div>
         <div style="display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end;">
-            <button class="close-tooltip-btn" style="padding: 6px 12px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Close</button>
+            <button class="close-tooltip-btn" style="padding: 6px 12px; background:; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Close</button>
             <button class="remove-account-btn" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Remove</button>
         </div>
     `;
@@ -5215,10 +4735,10 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
     modal.innerHTML = `
         <div class="modal-content" style="width: 800px; max-width: 95%; margin: 3% auto; padding: 25px; background: white; border-radius: 8px; position: relative; max-height: 90vh; overflow-y: auto;">
             <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer;">&times;</span>
-            <h3 style="color: #ff0080; margin-bottom: 20px;">📊 Link Account to Task</h3>
+            <h3 style="color: ; margin-bottom: 20px;">📊 Link Account to Task</h3>
             
-            <div style="margin-bottom: 20px; padding: 12px; background: #f9f9f9; border-radius: 6px; border-left: 3px solid #ff0080;">
-                <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Task:</div>
+            <div style="margin-bottom: 20px; padding: 12px; background: ; border-radius: 6px; border-left: 3px solid ;">
+                <div style="font-size: 13px; color: ; margin-bottom: 5px;">Task:</div>
                 <div style="font-weight: 500;">${task.name || task.taskNameCell?.querySelector('span')?.textContent || 'Task'}</div>
             </div>
             
@@ -5229,7 +4749,7 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Organizational Hierarchy</label>
-                        <select id="orgHierarchy" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <select id="orgHierarchy" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                             <option value="">Select Hierarchy...</option>
                             <option value="Corporate">Corporate</option>
                             <option value="Division">Division</option>
@@ -5241,18 +4761,18 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">FS Caption</label>
                         <input type="text" id="fsCaption" placeholder="e.g., Cash & Equivalents" 
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                               style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Account Name *</label>
                         <input type="text" id="accountName" placeholder="e.g., Cash & Cash Equivalents" 
-                               style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                               style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Account Owners</label>
-                        <select id="accountOwners" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;" multiple size="3">
+                        <select id="accountOwners" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;" multiple size="3">
                             <option value="PK">Palakh Khanna</option>
                             <option value="SM">Sarah Miller</option>
                             <option value="MP">Mel Preparer</option>
@@ -5261,7 +4781,7 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                             <option value="EW">Emma Watson</option>
                             <option value="DB">David Brown</option>
                         </select>
-                        <div style="font-size: 11px; color: #666; margin-top: 4px;">Ctrl+Click to select multiple</div>
+                        <div style="font-size: 11px; color: ; margin-top: 4px;">Ctrl+Click to select multiple</div>
                     </div>
                 </div>
                 
@@ -5273,12 +4793,12 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Account # From</label>
                             <input type="text" id="accountFrom" placeholder="e.g., 1000" 
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                                   style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Account # To</label>
                             <input type="text" id="accountTo" placeholder="e.g., 1999" 
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                                   style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                         </div>
                     </div>
                     
@@ -5286,18 +4806,18 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Due Days From</label>
                             <input type="number" id="dueDaysFrom" placeholder="e.g., 0" 
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                                   style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 500;">Due Days To</label>
                             <input type="number" id="dueDaysTo" placeholder="e.g., 30" 
-                                   style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                                   style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Is Key Account</label>
-                        <select id="isKeyAccount" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <select id="isKeyAccount" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                             <option value="All">All</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
@@ -5306,7 +4826,7 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Reconcilable</label>
-                        <select id="reconcilable" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <select id="reconcilable" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                             <option value="All">All</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
@@ -5315,7 +4835,7 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Risk Rating</label>
-                        <select id="riskRating" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <select id="riskRating" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                             <option value="All">All</option>
                             <option value="Low">Low</option>
                             <option value="Medium">Medium</option>
@@ -5325,7 +4845,7 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">ZBA</label>
-                        <select id="zba" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <select id="zba" style="width: 100%; padding: 10px; border: 2px solid ; border-radius: 6px;">
                             <option value="All">All</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
@@ -5334,9 +4854,9 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
                 </div>
             </div>
             
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-                <button id="cancelAccountBtn" style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
-                <button id="linkAccountBtn" style="padding: 10px 20px; background: #ff0080; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Link Account</button>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid ; padding-top: 20px;">
+                <button id="cancelAccountBtn" style="padding: 10px 20px; background:; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
+                <button id="linkAccountBtn" style="padding: 10px 20px; background: ; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Link Account</button>
             </div>
         </div>
     `;
@@ -5425,128 +4945,10 @@ function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void
 // ADD ACCOUNT STYLES
 // ================================
 
-function addAccountStyles(): void {
-    if (document.getElementById('account-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'account-styles';
-    style.textContent = `
-        .account-display {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            min-height: 24px;
-            align-items: center;
-        }
-        
-        .account-badge {
-            display: inline-block;
-            background: #ff0080;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .account-badge:hover {
-            background: #e50072;
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .add-account-icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            background: #f0f0f0;
-            color: #ff0080;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        
-        .add-account-icon:hover {
-            background: #ff0080;
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .account-tooltip {
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 10000;
-            animation: fadeIn 0.2s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .remove-account-btn {
-            padding: 6px 12px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .remove-account-btn:hover {
-            background: #c82333;
-            transform: scale(1.05);
-        }
-        
-        .close-tooltip-btn {
-            padding: 6px 12px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .close-tooltip-btn:hover {
-            background: #e0e0e0;
-        }
-        
-        #accountLinkingModal .modal-content {
-            animation: slideDown 0.3s ease;
-        }
-        
-        #accountLinkingModal input:focus,
-        #accountLinkingModal select:focus {
-            outline: none;
-            border-color: #ff0080 !important;
-            box-shadow: 0 0 0 2px rgba(255, 0, 128, 0.1);
-        }
-    `;
-    
-    document.head.appendChild(style);
-}
-
 // ================================
 // INITIALIZE ACCOUNT COLUMN
 // ================================
 
-function initializeAccountColumn(): void {
-    console.log('Initializing Account Column...');
-    addAccountStyles();
-    addAccountColumnToTasks();
-}
 
 // ================================
 // FIXED LINKED ACCOUNTS DISPLAY
@@ -5574,14 +4976,7 @@ function refreshLinkedAccountsColumn(): void {
                 const badge = document.createElement('span');
                 badge.textContent = account.accountName ? account.accountName.substring(0, 12) + (account.accountName.length > 12 ? '...' : '') : 'Account';
                 badge.style.cssText = `
-                    display: inline-block;
-                    background: #ff0080;
-                    color: white;
-                    padding: 2px 8px;
-                    border-radius: 12px;
-                    font-size: 11px;
-                    margin: 2px;
-                    cursor: pointer;
+                   
                 `;
                 badge.title = account.accountName || '';
                 
@@ -5597,18 +4992,7 @@ function refreshLinkedAccountsColumn(): void {
             const addMore = document.createElement('span');
             addMore.textContent = '+';
             addMore.style.cssText = `
-                display: inline-block;
-                width: 20px;
-                height: 20px;
-                background: #f0f0f0;
-                color: #ff0080;
-                border-radius: 50%;
-                text-align: center;
-                line-height: 20px;
-                font-size: 14px;
-                font-weight: bold;
-                margin: 2px;
-                cursor: pointer;
+               
             `;
             addMore.onclick = (e: MouseEvent) => {
                 e.stopPropagation();
@@ -5620,15 +5004,7 @@ function refreshLinkedAccountsColumn(): void {
             const addIcon = document.createElement('span');
             addIcon.textContent = '+ Link Account';
             addIcon.style.cssText = `
-                display: inline-block;
-                background: #f0f0f0;
-                color: #ff0080;
-                padding: 4px 12px;
-                border-radius: 16px;
-                font-size: 11px;
-                font-weight: 500;
-                cursor: pointer;
-                border: 1px dashed #ff0080;
+               
             `;
             addIcon.onclick = (e: MouseEvent) => {
                 e.stopPropagation();
@@ -5683,7 +5059,7 @@ function updateCDocColumn(): void {
         icon.className = docs.length > 0 ? 'fas fa-folder-open' : 'fas fa-folder';
         icon.style.cssText = `
             font-size: 20px;
-            color: ${docs.length > 0 ? '#ff0080' : '#999'};
+            color: ${docs.length > 0 ? '' : '#999'};
             transition: all 0.2s;
         `;
         
@@ -5701,31 +5077,14 @@ function updateCDocColumn(): void {
             badge.className = 'cdoc-badge';
             badge.textContent = docs.length.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background: #ff0080;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                
             `;
             iconContainer.appendChild(badge);
         } else {
             const plusIcon = document.createElement('i');
             plusIcon.className = 'fas fa-plus-circle';
             plusIcon.style.cssText = `
-                position: absolute;
-                bottom: -5px;
-                right: -5px;
-                font-size: 12px;
-                color: #ff0080;
-                background: white;
-                border-radius: 50%;
+               
             `;
             iconContainer.appendChild(plusIcon);
         }
@@ -5772,7 +5131,7 @@ function updateCDocColumn(): void {
         icon.className = docs.length > 0 ? 'fas fa-folder-open' : 'fas fa-folder';
         icon.style.cssText = `
             font-size: 20px;
-            color: ${docs.length > 0 ? '#ff0080' : '#999'};
+            color: ${docs.length > 0 ? '' : '#999'};
             transition: all 0.2s;
         `;
         
@@ -5790,30 +5149,14 @@ function updateCDocColumn(): void {
             badge.className = 'cdoc-badge';
             badge.textContent = docs.length.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background: #ff0080;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
+                
             `;
             iconContainer.appendChild(badge);
         } else {
             const plusIcon = document.createElement('i');
             plusIcon.className = 'fas fa-plus-circle';
             plusIcon.style.cssText = `
-                position: absolute;
-                bottom: -5px;
-                right: -5px;
-                font-size: 12px;
-                color: #ff0080;
-                background: white;
-                border-radius: 50%;
+               
             `;
             iconContainer.appendChild(plusIcon);
         }
@@ -5847,35 +5190,35 @@ function showDocumentManager(taskRow: HTMLTableRowElement): void {
         modal.innerHTML = `
             <div class="modal-content" style="width: 800px; max-width: 95%; max-height: 80vh; overflow-y: auto;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 20px;">📄 CDoc Document Manager</h3>
+                <h3 style="color: ; margin-bottom: 20px;">📄 CDoc Document Manager</h3>
                 
-                <div style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+                <div style="margin-bottom: 30px; background: ; padding: 20px; border-radius: 8px;">
                     <h4 style="margin-bottom: 15px; color: #333;">Upload New Documents</h4>
                     
                     <div id="dropArea" style="border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s;">
                         <div style="font-size: 32px; margin-bottom: 5px;"><i class="fa-solid fa-folder-open"></i></div>
-                        <div style="color: #666; margin-bottom: 5px;">Drag files here or</div>
-                        <button id="browseFileBtn" style="background: #ff0080; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Browse</button>
+                        <div style="color: ; margin-bottom: 5px;">Drag files here or</div>
+                        <button id="browseFileBtn" style="background: ; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Browse</button>
                         <input type="file" id="fileInput" style="display: none;" multiple>
                     </div>
                     
-                    <div id="selectedFilesList" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 10px; background: white; margin-bottom: 10px; display: none;">
-                        <div style="font-weight: 500; margin-bottom: 8px; color: #666;">Selected Files:</div>
+                    <div id="selectedFilesList" style="max-height: 150px; overflow-y: auto; border: 1px solid ; border-radius: 4px; padding: 10px; background: white; margin-bottom: 10px; display: none;">
+                        <div style="font-weight: 500; margin-bottom: 8px; color: ;">Selected Files:</div>
                         <div id="filesContainer"></div>
                     </div>
                     
                     <div style="display: flex; justify-content: flex-end;">
-                        <button id="uploadSelectedBtn" style="padding: 6px 16px; background: #00cfff; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Upload Files</button>
+                        <button id="uploadSelectedBtn" style="padding: 6px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Upload Files</button>
                     </div>
                 </div>
                 
                 <div>
                     <h4 style="margin-bottom: 15px; color: #333;">Attached Documents (<span id="docCount">${docs.length}</span>)</h4>
-                    <div id="documentsListContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px;"></div>
+                    <div id="documentsListContainer" style="max-height: 300px; overflow-y: auto; border: 1px solid ; border-radius: 4px;"></div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                    <button id="closeManagerBtn" style="padding: 8px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                    <button id="closeManagerBtn" style="padding: 8px 20px; background:; border: none; border-radius: 4px; cursor: pointer;">Close</button>
                 </div>
             </div>
         `;
@@ -5925,28 +5268,28 @@ function renderDocumentsList(docs: DocumentFile[], taskRow: HTMLTableRowElement)
         <table style="width: 100%; border-collapse: collapse;">
             <thead style="background: #f5f5f5; position: sticky; top: 0;">
                 <tr>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Name</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Size</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Upload Date</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #ddd;">Actions</th>
+                    <th">Name</th>
+                    <th">Size</th>
+                    <th">Upload Date</th>
+                    <th">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 ${docs.map((doc, index) => `
                     <tr data-doc-index="${index}">
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; border-bottom: 1px solid ;">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="font-size: 20px;">📄</span>
                                 <span style="font-weight: 500;">${doc.name}</span>
                             </div>
                         </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${(doc.size / 1024).toFixed(1)} KB</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; border-bottom: 1px solid ;">${(doc.size / 1024).toFixed(1)} KB</td>
+                        <td style="padding: 12px; border-bottom: 1px solid ;">
                             ${doc.uploadDate.toLocaleDateString()} 
                             <span style="color: #999; font-size: 11px;">${doc.uploadDate.toLocaleTimeString()}</span>
                         </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                            <button class="view-doc-btn" data-index="${index}" style="background: none; border: none; color: #ff0080; cursor: pointer; margin: 0 5px; font-size: 18px;" title="View">👁️</button>
+                        <td style="padding: 12px; border-bottom: 1px solid ; text-align: center;">
+                            <button class="view-doc-btn" data-index="${index}" style="background: none; border: none; color: ; cursor: pointer; margin: 0 5px; font-size: 18px;" title="View">👁️</button>
                             <button class="delete-doc-btn" data-index="${index}" style="background: none; border: none; color: #dc3545; cursor: pointer; margin: 0 5px; font-size: 18px;" title="Delete">🗑</button>
                         </td>
                     </tr>
@@ -5990,16 +5333,16 @@ function showDeleteConfirmation(taskRow: HTMLTableRowElement, index: number): vo
         confirmModal.innerHTML = `
             <div class="modal-content" style="width: 350px;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080;">Confirm Delete</h3>
+                <h3 style="color: ;">Confirm Delete</h3>
                 
                 <div style="margin: 20px 0; text-align: center;">
                     <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
                     <p style="margin-bottom: 5px;">Are you sure you want to delete this document?</p>
-                    <p style="color: #666; font-size: 13px;" id="docNameDisplay"></p>
+                    <p style="color: ; font-size: 13px;" id="docNameDisplay"></p>
                 </div>
                 
                 <div style="display: flex; justify-content: center; gap: 10px;">
-                    <button id="cancelDeleteBtn" style="padding: 8px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="cancelDeleteBtn" style="padding: 8px 20px; background:; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
                     <button id="confirmDeleteBtn" style="padding: 8px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                 </div>
             </div>
@@ -6084,8 +5427,8 @@ function setupUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): 
     
     dropArea.addEventListener('dragover', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ff0080';
-        dropArea.style.backgroundColor = '#fff0f5';
+        dropArea.style.borderColor = '';
+        dropArea.style.backgroundColor = '';
     });
     
     dropArea.addEventListener('dragleave', (e: DragEvent) => {
@@ -6114,7 +5457,7 @@ function setupUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): 
         uploadBtn.style.display = 'inline-block';
         
         filesContainer.innerHTML = selectedFiles.map((file, index) => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid #eee;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid ;">
                 <span>📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
                 <button class="remove-file" data-index="${index}" style="background:none; border:none; color:#dc3545; cursor:pointer;">✕</button>
             </div>
@@ -6251,12 +5594,12 @@ function previewDocument(doc: DocumentFile): void {
             <style>
                 body { font-family: Arial, sans-serif; padding: 30px; background: #f5f5f5; margin: 0; }
                 .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px; }
-                .doc-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0; }
+                .doc-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid; }
                 .doc-icon { font-size: 48px; }
-                .doc-title { font-size: 24px; font-weight: bold; color: #ff0080; }
-                .doc-meta { background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 30px; }
+                .doc-title { font-size: 24px; font-weight: bold; color: ; }
+                .doc-meta { background: ; padding: 20px; border-radius: 6px; margin-bottom: 30px; }
                 .meta-row { display: flex; margin-bottom: 10px; }
-                .meta-label { width: 120px; color: #666; }
+                .meta-label { width: 120px; color: ; }
                 .meta-value { color: #333; font-weight: 500; }
                 .preview-placeholder { border: 2px dashed #ddd; padding: 60px; text-align: center; border-radius: 8px; }
                 .preview-icon { font-size: 64px; margin-bottom: 20px; color: #999; }
@@ -6296,64 +5639,8 @@ function previewDocument(doc: DocumentFile): void {
     `);
 }
 
-function addDocumentManagerStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        .cdoc-count {
-            cursor: pointer;
-            color: #ff0080;
-            font-weight: bold;
-            font-size: 14px;
-            padding: 4px 8px;
-            display: inline-block;
-            transition: all 0.2s;
-        }
-        
-        .cdoc-count:hover {
-            transform: scale(1.1);
-            background-color: #fff0f5;
-            border-radius: 4px;
-        }
-        
-        #documentManagerModal .modal-content {
-            animation: slideIn 0.3s ease;
-        }
-        
-        #dropArea {
-            transition: all 0.3s;
-        }
-        
-        #dropArea.drag-over {
-            border-color: #ff0080 !important;
-            background-color: #fff0f5 !important;
-        }
-        
-        #documentsListContainer tr:hover {
-            background-color: #f9f9f9;
-        }
-        
-        .view-doc-btn, .delete-doc-btn {
-            transition: all 0.2s;
-            opacity: 0.7;
-        }
-        
-        .view-doc-btn:hover, .delete-doc-btn:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-        
-        #deleteConfirmModal .modal-content {
-            animation: slideIn 0.3s ease;
-            text-align: center;
-        }
-    `;
-    document.head.appendChild(style);
-}
 
-function initializeDocumentManager(): void {
-    addDocumentManagerStyles();
-    updateCDocColumn();
-}
+
 
 // ================================
 // STATUS CHANGE FUNCTIONS
@@ -6400,17 +5687,17 @@ function showStatusChangeModal(task: Task): void {
         <div id="statusChangeModal" class="modal" style="display: block; z-index: 10000;">
             <div class="modal-content" style="width: 350px; position: relative; z-index: 10001;">
                 <span class="close" style="position: absolute; right: 10px; top: 5px; font-size: 24px; cursor: pointer;">&times;</span>
-                <h3 style="color: #ff0080; margin-top: 0;">Change Status</h3>
+                <h3 style="color: ; margin-top: 0;">Change Status</h3>
                 
                 <div style="margin: 20px 0;">
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Current Status</label>
-                        <div id="currentStatusDisplay" style="padding: 8px; background: #f0f0f0; border-radius: 4px;">${task.statusBadge.innerText}</div>
+                        <div id="currentStatusDisplay" style="padding: 8px; background:; border-radius: 4px;">${task.statusBadge.innerText}</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">New Status</label>
-                        <select id="newStatusSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <select id="newStatusSelect" >
                             <option value="Not Started">Not Started</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
@@ -6424,13 +5711,13 @@ function showStatusChangeModal(task: Task): void {
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Comment (Optional)</label>
-                        <textarea id="statusComment" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Add comment..."></textarea>
+                        <textarea id="statusComment" rows="3"  placeholder="Add comment..."></textarea>
                     </div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button id="cancelStatusBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                    <button id="updateStatusBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Update Status</button>
+                    <button id="cancelStatusBtn" style="padding: 8px 16px; background:; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="updateStatusBtn" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer;">Update Status</button>
                 </div>
             </div>
         </div>
@@ -6564,17 +5851,17 @@ function showSubtaskStatusChangeModal(subtask: Subtask): void {
         <div id="statusChangeModal" class="modal" style="display: block; z-index: 10000;">
             <div class="modal-content" style="width: 350px; position: relative; z-index: 10001;">
                 <span class="close" style="position: absolute; right: 10px; top: 5px; font-size: 24px; cursor: pointer;">&times;</span>
-                <h3 style="color: #ff0080; margin-top: 0;">Change Subtask Status</h3>
+                <h3 style="color: ; margin-top: 0;">Change Subtask Status</h3>
                 
                 <div style="margin: 20px 0;">
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Current Status</label>
-                        <div id="currentStatusDisplay" style="padding: 8px; background: #f0f0f0; border-radius: 4px;">${subtask.statusBadge.innerText}</div>
+                        <div id="currentStatusDisplay" style="padding: 8px; background:; border-radius: 4px;">${subtask.statusBadge.innerText}</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">New Status</label>
-                        <select id="newStatusSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <select id="newStatusSelect" >
                             <option value="Not Started">Not Started</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
@@ -6588,13 +5875,13 @@ function showSubtaskStatusChangeModal(subtask: Subtask): void {
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: 500;">Comment (Optional)</label>
-                        <textarea id="statusComment" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Add comment..."></textarea>
+                        <textarea id="statusComment" rows="3"  placeholder="Add comment..."></textarea>
                     </div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button id="cancelStatusBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                    <button id="updateStatusBtn" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Update Status</button>
+                    <button id="cancelStatusBtn" style="padding: 8px 16px; background:; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="updateStatusBtn" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer;">Update Status</button>
                 </div>
             </div>
         </div>
@@ -6740,74 +6027,9 @@ function initializeStatusSync(): void {
     }
 }
 
-// Add styles for all status types
-function addStatusStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        .skystemtaskmaster-status-badge {
-            cursor: pointer;
-            transition: all 0.2s;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-block;
-        }
-        
-        .skystemtaskmaster-status-badge:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .skystemtaskmaster-status-not-started {
-            background: #fde2e4;
-            color: #e91e63;
-        }
-        
-        .skystemtaskmaster-status-in-progress {
-            background: #fff3cd;
-            color: #ff9800;
-        }
-        
-        .skystemtaskmaster-status-completed {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .skystemtaskmaster-status-review {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .skystemtaskmaster-status-approved {
-            background: #009688;
-            color: white;
-        }
-        
-        .skystemtaskmaster-status-rejected {
-            background: #f44336;
-            color: white;
-        }
-        
-        .skystemtaskmaster-status-hold {
-            background: #9c27b0;
-            color: white;
-        }
-        
-        .skystemtaskmaster-status-overdue {
-            background: #d32f2f;
-            color: white;
-        }
-        
-        #statusChangeModal .modal-content {
-            animation: slideIn 0.3s ease;
-        }
-    `;
-    document.head.appendChild(style);
-}
+
 
 function initializeStatus(): void {
-    addStatusStyles();
     makeStatusEditable();
 }
 
@@ -7040,96 +6262,6 @@ function loadTaskOrder(): void {
         console.error('Failed to load saved order', e);
     }
 }
-
-function addDragStyles(): void {
-    if (document.getElementById('skystemtaskmaster-drag-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'skystemtaskmaster-drag-styles';
-    style.textContent = `
-        .skystemtaskmaster-draggable {
-            cursor: move;
-            user-select: none;
-        }
-        
-        .skystemtaskmaster-dragging {
-            opacity: 0.5;
-            background: #f0f0f0 !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .skystemtaskmaster-drag-over-top {
-            border-top: 3px solid #ff0080 !important;
-            background: rgba(255, 0, 128, 0.05);
-        }
-        
-        .skystemtaskmaster-drag-over-bottom {
-            border-bottom: 3px solid #ff0080 !important;
-            background: rgba(255, 0, 128, 0.05);
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// ================================
-// USER FUNCTIONS
-// ================================
-
-function addUserStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        .skystemtaskmaster-badge {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            color: white;
-            text-align: center;
-            line-height: 30px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .skystemtaskmaster-badge:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .skystemtaskmaster-badge-pk { background: #ff0080; }
-        .skystemtaskmaster-badge-sm { background: #00cfff; }
-        .skystemtaskmaster-badge-mp { background: #9c27b0; }
-        .skystemtaskmaster-badge-pp { background: #ff9800; }
-        .skystemtaskmaster-badge-js { background: #4caf50; }
-        .skystemtaskmaster-badge-ew { background: #f44336; }
-        .skystemtaskmaster-badge-db { background: #795548; }
-        
-        #userSelectionModal .modal-content {
-            animation: slideIn 0.3s ease;
-        }
-        
-        .user-item {
-            transition: all 0.2s;
-        }
-        
-        .user-item:hover {
-            background-color: #f5f5f5;
-        }
-        
-        .user-item.selected {
-            background-color: #fff0f5;
-        }
-        
-        #userSearchInput:focus {
-            outline: none;
-            border-color: #ff0080 !important;
-            box-shadow: 0 0 0 2px rgba(255, 0, 128, 0.1);
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 function makeOwnerReviewerClickable(): void {
     tasks.forEach(task => {
         const ownerCell = task.row.cells[5] as HTMLElement;
@@ -7162,7 +6294,7 @@ function makeCellClickable(cell: HTMLElement, type: string, item: Task | Subtask
     });
     
     cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
+        cell.style.backgroundColor = '';
         cell.style.borderRadius = '4px';
     });
     
@@ -7184,18 +6316,18 @@ function showUserModal(cell: HTMLElement, type: string, item: Task | Subtask): v
         modal.innerHTML = `
             <div class="modal-content" style="width: 400px;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 15px;">Select ${type === 'owner' ? 'Owner' : 'Reviewer'}</h3>
+                <h3 style="color: ; margin-bottom: 15px;">Select ${type === 'owner' ? 'Owner' : 'Reviewer'}</h3>
                 
                 <div style="position: relative; margin-bottom: 15px;">
                     <input type="text" id="userSearch" placeholder="Search by name or initials..." 
                            style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
                 </div>
                 
-                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px;" id="userList"></div>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid ; border-radius: 4px;" id="userList"></div>
                 
                 <div style="display: flex; justify-content: flex-end; margin-top: 15px; gap: 10px;">
-                    <button id="unassignUserBtn" style="padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer;">Unassign</button>
-                    <button id="closeUserModal" style="padding: 8px 16px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+                    <button id="unassignUserBtn" style="padding: 8px 16px; background:; border: none; border-radius: 4px; cursor: pointer;">Unassign</button>
+                    <button id="closeUserModal" style="padding: 8px 16px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
                 </div>
             </div>
         `;
@@ -7252,14 +6384,14 @@ function updateUserList(searchText: string, currentInitials: string, type: strin
         const isCurrent = user.initials === currentInitials;
         return `
             <div class="user-item" data-user='${JSON.stringify(user)}' 
-                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; ${isCurrent ? 'background-color: #fff0f5;' : ''}">
+                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid ; cursor: pointer; ${isCurrent ? 'background-color: ;' : ''}">
                 <span class="skystemtaskmaster-badge skystemtaskmaster-badge-${user.initials.toLowerCase()}" 
                       style="width: 32px; height: 32px; line-height: 32px;">${user.initials}</span>
                 <div style="flex: 1;">
                     <div style="font-weight: 500;">${user.name}</div>
-                    <div style="font-size: 12px; color: #666;">${user.email} • ${user.role}</div>
+                    <div style="font-size: 12px; color: ;">${user.email} • ${user.role}</div>
                 </div>
-                ${isCurrent ? '<span style="color: #ff0080;">✓</span>' : ''}
+                ${isCurrent ? '<span style="color: ;">✓</span>' : ''}
             </div>
         `;
     }).join('');
@@ -7346,16 +6478,7 @@ function unassignUser(cell: HTMLElement, type: string, item: Task | Subtask): vo
     
     const emptySpan = document.createElement('span');
     emptySpan.style.cssText = `
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: #f0f0f0;
-        color: #999;
-        text-align: center;
-        line-height: 30px;
-        font-size: 16px;
-        cursor: pointer;
+      
     `;
     emptySpan.textContent = '?';
     emptySpan.title = 'Click to assign';
@@ -7399,7 +6522,6 @@ function updateExistingBadges(): void {
 
 function initializeUserSystem(): void {
     console.log('Initializing user system...');
-    addUserStyles();
     updateExistingBadges();
     setTimeout(() => {
         makeOwnerReviewerClickable();
@@ -7414,7 +6536,6 @@ function initializeUserSystem(): void {
 // Initialize comments
 function initializeComments(): void {
     console.log('Initializing comments...');
-    addCommentStyles();
     
     setTimeout(() => {
         updateCommentColumn();
@@ -7487,18 +6608,7 @@ function updateCommentCellForRow(row: HTMLTableRowElement, item: Task | Subtask,
             badge.className = 'comment-count-badge';
             badge.textContent = count.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -8px;
-                right: -8px;
-                background: #ff0080;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+               
             `;
             iconContainer.appendChild(icon);
             iconContainer.appendChild(badge);
@@ -7736,8 +6846,8 @@ function getAuthorFullName(initials: string): string {
 
 function getUserColor(initials: string): string {
     const colors: { [key: string]: string } = {
-        'PK': '#ff0080',
-        'SM': '#00cfff',
+        'PK': '',
+        'SM': '',
         'MP': '#9c27b0',
         'PP': '#ff9800',
         'JS': '#4caf50',
@@ -7833,138 +6943,7 @@ function deleteComment(commentKey: string, commentId: string): void {
     updateCommentColumn();
 }
 
-// Add comment styles
-function addCommentStyles(): void {
-    if (document.getElementById('comment-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'comment-styles';
-    style.textContent = `
-        .comment-panel {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 380px;
-            height: 100vh;
-            background: white;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-            transition: right 0.3s ease;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #ddd;
-        }
-        .comment-panel.open { right: 0; }
-        .comment-panel-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f9f9f9;
-        }
-        .comment-panel-header span { font-weight: 600; color: #ff0080; }
-        .comment-panel-header button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-        }
-        .comment-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            background: #fafafa;
-        }
-        .no-comments {
-            text-align: center;
-            color: #999;
-            margin-top: 40px;
-            font-style: italic;
-        }
-        .comment-item {
-            background: white;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
-        }
-        .comment-item.editing {
-            border: 2px solid #ff0080;
-        }
-        .comment-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 8px;
-        }
-        .comment-author {
-            display: inline-block;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            color: white;
-            text-align: center;
-            line-height: 28px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .comment-text {
-            font-size: 14px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            margin: 8px 0;
-            color: #333;
-        }
-        .comment-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 8px;
-        }
-        .comment-actions button {
-            background: none;
-            border: none;
-            color: #ff0080;
-            font-size: 12px;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-        .comment-actions button:hover { background: #fff0f5; }
-        .comment-input-area {
-            padding: 16px;
-            border-top: 1px solid #eee;
-            background: white;
-        }
-        .comment-input-area textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            resize: vertical;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-        .comment-input-area textarea:focus {
-            outline: none;
-            border-color: #ff0080;
-        }
-        .add-comment-btn {
-            background: #ff0080;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            float: right;
-        }
-        .add-comment-btn:hover { background: #e50072; }
-    `;
-    document.head.appendChild(style);
-}
+
 
 function ensureAllTasksHaveIds(): void {
     console.log('Ensuring all tasks and subtasks have IDs...');
@@ -8093,7 +7072,7 @@ function makeCellEditable(cell: HTMLElement, task: Task, fieldName: string): voi
     // Hover effect
     cell.addEventListener('mouseenter', () => {
         if (!cell.classList.contains('editing-mode')) {
-            cell.style.backgroundColor = '#fff0f5';
+            cell.style.backgroundColor = '';
             cell.style.borderRadius = '4px';
         }
     });
@@ -8255,310 +7234,6 @@ function addTaskEventListeners(task: Task): void {
 }
 
 // ================================
-// STYLES
-// ================================
-
-function addStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .skystemtaskmaster-editable {
-            cursor: pointer;
-            padding: 2px 4px;
-            border-radius: 2px;
-            min-width: 50px;
-            transition: all 0.2s ease;
-        }
-        
-        .skystemtaskmaster-editable:hover {
-            background-color: #f0f0f0;
-            outline: 1px solid #ff0080;
-        }
-        
-        .skystemtaskmaster-editable:focus {
-            outline: 2px solid #ff0080;
-            background-color: #fff;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 4% auto;
-            padding: 20px;
-            border-radius: 8px;
-            position: relative;
-            animation: slideDown 0.3s;
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .close {
-            position: absolute;
-            right: 20px;
-            top: 10px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        .close:hover { color: #ff0080; }
-        
-        /* 3-Dot Dropdown Styles */
-        .skystemtaskmaster-dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .skystemtaskmaster-three-dots {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-            color: #666;
-            transition: all 0.2s;
-        }
-        
-        .skystemtaskmaster-three-dots:hover {
-            background: #f0f0f0;
-            color: #ff0080;
-        }
-        
-        .skystemtaskmaster-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            min-width: 200px;
-            z-index: 1000;
-            display: none;
-            animation: fadeIn 0.2s;
-        }
-        
-        .skystemtaskmaster-dropdown-menu.show {
-            display: block;
-        }
-        
-        .dropdown-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            color: #333;
-        }
-        
-        .dropdown-item:hover {
-            background: #fff0f5;
-            color: #ff0080;
-        }
-        
-        .dropdown-divider {
-            height: 1px;
-            background: #eee;
-            margin: 4px 0;
-        }
-        
-        .dropdown-item .submenu {
-            position: absolute;
-            left: 100%;
-            top: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            min-width: 150px;
-            display: none;
-            animation: slideLeft 0.2s;
-        }
-        
-        .dropdown-item:hover .submenu {
-            display: block;
-        }
-        
-        .submenu-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .submenu-item:hover {
-            background: #fff0f5;
-            color: #ff0080;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideLeft {
-            from { opacity: 0; transform: translateX(10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        /* List styles */
-        .main-list-row {
-            background-color: #f0f0f0 !important;
-            border-top: 2px solid #ff0080;
-            border-bottom: 2px solid #ff0080;
-        }
-        
-        .main-list-row td { padding: 0 !important; }
-        
-        .list-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-        }
-        
-        .list-icon { font-size: 20px; color: #ff0080; }
-        .list-name { flex: 1; font-weight: bold; font-size: 16px; }
-        
-        .add-sublist-btn {
-            background: #ff0080;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        
-        .add-sublist-btn:hover { background: #e50072; }
-        
-        .collapse-icon {
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s;
-        }
-        
-        .collapse-icon:hover { transform: scale(1.2); }
-        
-        /* Sub list styles */
-        .sub-list-row {
-            background-color: #f9f9f9 !important;
-        }
-        
-        .sub-list-row td { padding: 0 !important; }
-        
-        .sublist-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 10px 10px 40px;
-        }
-        
-        .sublist-icon { font-size: 18px; color: #00cfff; }
-        .sublist-name { flex: 1; font-weight: 500; }
-        
-        .add-task-btn {
-            background: #00cfff;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .add-task-btn:hover { background: #00b5e0; }
-        
-        .collapse-sublist-icon {
-            cursor: pointer;
-            font-size: 14px;
-            transition: transform 0.2s;
-        }
-        
-        .collapse-sublist-icon:hover { transform: scale(1.2); }
-        
-        /* Task styles */
-        .task-row .skystemtaskmaster-task-name {
-            padding-left: 70px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .comment-icon {
-            cursor: pointer;
-            font-size: 14px;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
-        
-        .comment-icon:hover { opacity: 1; }
-        
-        /* Status badges */
-        .skystemtaskmaster-status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-block;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .skystemtaskmaster-status-badge:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .skystemtaskmaster-status-not-started {
-            background: #fde2e4;
-            color: #e91e63;
-        }
-        
-        .skystemtaskmaster-status-in-progress {
-            background: #fff3cd;
-            color: #ff9800;
-        }
-        
-        .skystemtaskmaster-status-completed {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        /* Days cell */
-        .days-cell { font-weight: bold; }
-        .skystemtaskmaster-days-positive { color: #4CAF50; }
-        .skystemtaskmaster-days-negative { color: #f44336; }
-    `;
-    document.head.appendChild(style);
-}
-
-// ================================
 // CREATE MODALS
 // ================================
 
@@ -8573,7 +7248,7 @@ function createModals(): void {
                 <div style="margin-top:20px;">
                     <div style="position:relative;">
                         <button id="newTaskMainButton"
-                            style="width:100%; padding:15px; background:#ff0080; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; display:flex; justify-content:space-between; align-items:center;">
+                            style="width:100%; padding:15px; background:; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; display:flex; justify-content:space-between; align-items:center;">
                             <span>
                                 <i class="fa-solid fa-clipboard-list"></i> New Task
                             </span>
@@ -8585,7 +7260,7 @@ function createModals(): void {
                         <div id="newTaskDropdown"
                             style="display:none; position:absolute; top:100%; left:0; width:100%; background:white; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.2); margin-top:5px; z-index:1000;">
                             <button id="newListOption"
-                                style="width:100%; padding:12px; border:none; background:white; cursor:pointer; text-align:left; border-bottom:1px solid #eee;">
+                                style="width:100%; padding:12px; border:none; background:white; cursor:pointer; text-align:left; border-bottom:1px solid ;">
                                 <span>
                                  <i class="fa-solid fa-list"></i> New List
                                </span>
@@ -8608,7 +7283,7 @@ function createModals(): void {
                 <h3>Enter List Name</h3>
                 <div style="margin-top: 20px;">
                     <input type="text" id="listNameInput" placeholder="Enter list name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 15px;">
-                    <button id="createListBtn" style="background: #ff0080; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">Create List</button>
+                    <button id="createListBtn" style="background: ; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">Create List</button>
                 </div>
             </div>
         </div>
@@ -8617,22 +7292,22 @@ function createModals(): void {
         <div id="importTasksModal" class="modal">
             <div class="modal-content" style="width: 1000px; max-width: 90%;">
                 <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer;">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 20px;">📥 Import Tasks from File</h3>
+                <h3 style="color: ; margin-bottom: 20px;">📥 Import Tasks from File</h3>
                 
                 <div style="margin: 20px 0;">
                     <!-- File Upload Area -->
-                    <div style="margin-bottom: 25px; background: #f9f9f9; padding: 20px; border-radius: 8px; height:300px;">
+                    <div style="margin-bottom: 25px; background: ; padding: 20px; border-radius: 8px; height:300px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Upload File</h4>
                         
-                        <div id="importDropArea" style="border: 2px dashed #ff0080; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s; background: #fff0f5;">
+                        <div id="importDropArea" style="border: 2px dashed ; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: all 0.3s; background: ;">
                             <div style="font-size: 48px; margin-bottom: 10px;"><i class="fa-solid fa-folder-open"></i></div>
-                            <div style="color: #ff0080; font-weight: 500; margin-bottom: 5px;">Drag & drop file here</div>
-                            <div style="color: #666; margin-bottom: 15px;">or</div>
-                            <button id="importBrowseFileBtn" style="background: #ff0080; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">Browse Files</button>
+                            <div style="color: ; font-weight: 500; margin-bottom: 5px;">Drag & drop file here</div>
+                            <div style="color: ; margin-bottom: 15px;">or</div>
+                            <button id="importBrowseFileBtn" style="background: ; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">Browse Files</button>
                             <input type="file" id="importFileInput" style="display: none;" accept=".csv,.json,.txt,.xlsx,.xls">
                         </div>
                         
-                        <div style="font-size: 13px; color: #666; padding: 10px; background: #fff; border-radius: 4px; border-left: 3px solid #ff0080;">
+                        <div style="font-size: 13px; color: ; padding: 10px; background: #fff; border-radius: 4px; border-left: 3px solid ;">
                             <strong>Supported formats:</strong> CSV, JSON, TXT (one task per line), Excel (.xlsx, .xls)
                         </div>
                     </div>
@@ -8640,14 +7315,14 @@ function createModals(): void {
                     <!-- Preview Area -->
                     <div id="importPreviewArea" style="display: none; margin-bottom: 20px;">
                         <h4 style="margin-bottom: 10px; color: #333;">Preview Imported Tasks</h4>
-                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; background: white;">
+                        <div>
                             <table style="width: 100%; border-collapse: collapse;">
                                 <thead style="background: #f5f5f5; position: sticky; top: 0;">
                                     <tr>
-                                        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Task Name</th>
-                                        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Owner</th>
-                                        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Reviewer</th>
-                                        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Due Date</th>
+                                        <th>Task Name</th>
+                                        <th>Owner</th>
+                                        <th>Reviewer</th>
+                                        <th>Due Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="importPreviewBody"></tbody>
@@ -8656,7 +7331,7 @@ function createModals(): void {
                     </div>
                     
                     <!-- Import Options -->
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                    <div style="margin-bottom: 20px; padding: 15px; background: ; border-radius: 8px;">
                         <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">Import Options</h4>
                         
                         <div style="margin-bottom: 15px;">
@@ -8680,8 +7355,8 @@ function createModals(): void {
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button id="cancelImportBtn" style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
-                    <button id="processImportBtn" style="padding: 10px 20px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;" disabled>Import Tasks</button>
+                    <button id="cancelImportBtn" style="padding: 10px 20px; background:; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
+                    <button id="processImportBtn" style="padding: 10px 20px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;" disabled>Import Tasks</button>
                 </div>
             </div>
         </div>
@@ -8693,24 +7368,24 @@ function createModals(): void {
                 <div style="margin-top: 20px;">
                     <div style="margin-bottom: 15px;">
                         <label>Task Name *</label>
-                        <input type="text" id="addTaskName" placeholder="Enter task name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" autofocus>
+                        <input type="text" id="addTaskName" placeholder="Enter task name"  autofocus>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div>
                             <label>Acc</label>
-                            <input type="text" id="addTaskAcc" value="+" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="addTaskAcc" value="+" >
                         </div>
                         <div>
                             <label>TDoc</label>
-                            <input type="text" id="addTaskTdoc" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="text" id="addTaskTdoc" value="0" >
                         </div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div>
                             <label>Owner</label>
-                            <select id="addTaskOwner" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="addTaskOwner" >
                                 <option value="PK">PK (Palakh Khanna)</option>
                                 <option value="SM">SM (Sarah Miller)</option>
                                 <option value="MP">MP (Mel Preparer)</option>
@@ -8736,10 +7411,10 @@ function createModals(): void {
                     
                     <div style="margin-bottom: 15px;">
                         <label>Due Date (optional)</label>
-                        <input type="date" id="addTaskDueDate" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="date" id="addTaskDueDate" >
                     </div>
                     
-                    <button id="addTaskBtn" style="background: #ff0080; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px;">Add Task</button>
+                    <button id="addTaskBtn" style="background: ; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px;">Add Task</button>
                 </div>
             </div>
         </div>
@@ -8751,12 +7426,12 @@ function createModals(): void {
                 <div style="margin-top: 20px;">
                     <div style="margin-bottom: 15px;">
                         <label>Subtask Name</label>
-                        <input type="text" id="subtaskName" placeholder="Enter subtask name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" id="subtaskName" placeholder="Enter subtask name" >
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label>Status</label>
-                        <select id="subtaskStatus" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <select id="subtaskStatus" ">
                             <option value="Not Started">Not Started</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
@@ -8766,14 +7441,14 @@ function createModals(): void {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div>
                             <label>Owner</label>
-                            <select id="subtaskOwner" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="subtaskOwner" ">
                                 <option value="PK">PK</option>
                                 <option value="SM">SM</option>
                             </select>
                         </div>
                         <div>
                             <label>Reviewer</label>
-                            <select id="subtaskReviewer" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <select id="subtaskReviewer" ">
                                 <option value="PK">PK</option>
                                 <option value="SM">SM</option>
                             </select>
@@ -8782,10 +7457,10 @@ function createModals(): void {
                     
                     <div style="margin-bottom: 15px;">
                         <label>TDoc</label>
-                        <input type="text" id="subtaskTdoc" value="" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" id="subtaskTdoc" value="" ">
                     </div>
                     
-                    <button id="addSubtaskBtn" style="background: #ff0080; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">Add Subtask</button>
+                    <button id="addSubtaskBtn" style="background: ; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%;">Add Subtask</button>
                 </div>
             </div>
         </div>
@@ -9144,7 +7819,7 @@ function updateCDocColumnForRow(row: HTMLTableRowElement): void {
     icon.className = docs.length > 0 ? 'fas fa-folder-open' : 'fas fa-folder';
     icon.style.cssText = `
         font-size: 20px;
-        color: ${docs.length > 0 ? '#ff0080' : '#999'};
+        color: ${docs.length > 0 ? '' : '#999'};
         transition: all 0.2s;
     `;
     
@@ -9162,31 +7837,14 @@ function updateCDocColumnForRow(row: HTMLTableRowElement): void {
         badge.className = 'cdoc-badge';
         badge.textContent = docs.length.toString();
         badge.style.cssText = `
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff0080;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 10px;
-            min-width: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            
         `;
         iconContainer.appendChild(badge);
     } else {
         const plusIcon = document.createElement('i');
         plusIcon.className = 'fas fa-plus-circle';
         plusIcon.style.cssText = `
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            font-size: 12px;
-            color: #ff0080;
-            background: white;
-            border-radius: 50%;
+           
         `;
         iconContainer.appendChild(plusIcon);
     }
@@ -9232,7 +7890,7 @@ function updateTDocColumnForRow(row: HTMLTableRowElement): void {
     icon.className = 'fas fa-file-alt';
     icon.style.cssText = `
         font-size: 20px;
-        color: ${docs.length > 0 ? '#00cfff' : '#999'};
+        color: ${docs.length > 0 ? '' : '#999'};
         transition: all 0.2s;
     `;
     
@@ -9250,31 +7908,14 @@ function updateTDocColumnForRow(row: HTMLTableRowElement): void {
         badge.className = 'tdoc-badge';
         badge.textContent = docs.length.toString();
         badge.style.cssText = `
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #00cfff;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 10px;
-            min-width: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+           
         `;
         iconContainer.appendChild(badge);
     } else {
         const plusIcon = document.createElement('i');
         plusIcon.className = 'fas fa-plus-circle';
         plusIcon.style.cssText = `
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            font-size: 12px;
-            color: #ff0080;
-            background: white;
-            border-radius: 50%;
+           
         `;
         iconContainer.appendChild(plusIcon);
     }
@@ -9335,18 +7976,7 @@ function updateCommentColumnForRow(row: HTMLTableRowElement, item: Task | Subtas
             badge.className = 'comment-count-badge';
             badge.textContent = count.toString();
             badge.style.cssText = `
-                position: absolute;
-                top: -8px;
-                right: -8px;
-                background: #ff0080;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 5px;
-                border-radius: 10px;
-                min-width: 15px;
-                text-align: center;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+               
             `;
             iconContainer.appendChild(icon);
             iconContainer.appendChild(badge);
@@ -9379,21 +8009,17 @@ function updateRecurrenceClasses(): void {
         if (task.row) {
             const recurrenceType = task.recurrenceType || 'None';
             
-            // Define recurring options
             const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
             const isRecurring = recurringOptions.indexOf(recurrenceType) >= 0;
             
-            // Remove existing classes
             task.row.classList.remove('recurring-task', 'non-recurring-task');
             
-            // Add appropriate class
             if (isRecurring) {
                 task.row.classList.add('recurring-task');
             } else {
                 task.row.classList.add('non-recurring-task');
             }
             
-            // Store recurrence type as data attribute
             task.row.setAttribute('data-recurrence-type', recurrenceType);
         }
     });
@@ -9401,7 +8027,6 @@ function updateRecurrenceClasses(): void {
     console.log('Recurrence classes updated for', tasks.length, 'tasks');
 }
 
-// Add function to update recurrence type for a task
 function updateTaskRecurrence(taskId: string, newRecurrenceType: string): void {
     const task = tasks.find(t => t.id === taskId || t.row.dataset.taskId === taskId);
     if (task) {
@@ -9426,11 +8051,9 @@ function updateTaskRecurrence(taskId: string, newRecurrenceType: string): void {
             let indicator = nameDiv.querySelector('.recurrence-indicator') as HTMLElement;
             if (indicator) {
                 indicator.textContent = newRecurrenceType;
-                indicator.style.background = isRecurring ? '#808080' : '#00cfff';
+                indicator.style.background = isRecurring ? '' : '';
                 indicator.title = `Recurrence: ${newRecurrenceType} (Click to change)`;
             } else {
-                // If indicator doesn't exist, create it
-                // Note: addRecurrenceEditor is not defined, using the function that exists
                 makeRecurrenceCellsClickable();
             }
         }
@@ -9466,7 +8089,7 @@ function syncRecurrenceFromColumn(): void {
                 let indicator = nameDiv.querySelector('.recurrence-indicator') as HTMLElement;
                 if (indicator) {
                     indicator.textContent = recurrenceValue;
-                    indicator.style.background = recurrenceValue !== 'None' ? '#808080' : '#00cfff';
+                    indicator.style.background = recurrenceValue !== 'None' ? '' : '';
                     indicator.title = `Recurrence: ${recurrenceValue} (Click to change)`;
                 }
             }
@@ -9483,7 +8106,6 @@ function syncRecurrenceFromColumn(): void {
     });
 }
 
-// Add modal for changing recurrence type
 function showRecurrenceModal(task: Task): void {
     let modal = document.getElementById('recurrenceModal') as HTMLElement;
     
@@ -9494,24 +8116,24 @@ function showRecurrenceModal(task: Task): void {
         modal.innerHTML = `
             <div class="modal-content" style="width: 400px;">
                 <span class="close">&times;</span>
-                <h3 style="color: #ff0080; margin-bottom: 15px;">Set Recurrence</h3>
+                <h3 style="color: ; margin-bottom: 15px;">Set Recurrence</h3>
                 
                 <div style="margin: 20px 0;">
-                    <div style="margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
-                        <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Task:</div>
+                    <div style="margin-bottom: 20px; padding: 10px; background: ; border-radius: 6px;">
+                        <div style="font-size: 13px; color:; margin-bottom: 5px;">Task:</div>
                         <div style="font-weight: 500;">${task.name || task.taskNameCell?.querySelector('span')?.textContent || 'Task'}</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Current Recurrence</label>
-                        <div id="currentRecurrenceDisplay" style="padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 15px;">
+                        <div id="currentRecurrenceDisplay" style="padding: 8px; background:; border-radius: 4px; margin-bottom: 15px;">
                             ${task.recurrenceType || 'None'}
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 500;">New Recurrence Type</label>
-                        <select id="recurrenceTypeSelect" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        <select id="recurrenceTypeSelect" style="width: 100%; padding: 10px; border: 2px solid; border-radius: 6px; font-size: 14px;">
                             <option value="None">None (Non-recurring)</option>
                             <option value="Daily">Daily</option>
                             <option value="Weekly">Weekly</option>
@@ -9521,15 +8143,15 @@ function showRecurrenceModal(task: Task): void {
                         </select>
                     </div>
                     
-                    <div style="color: #666; font-size: 13px; padding: 10px; background: #f9f9f9; border-radius: 4px; border-left: 3px solid #ff0080;">
+                    <div style="color: ; font-size: 13px; padding: 10px; background: ; border-radius: 4px; border-left: 3px solid ;">
                         <strong>Note:</strong> Recurring tasks show a gray left border, non-recurring show blue.
                         The recurrence type will also appear next to the task name.
                     </div>
                 </div>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button id="cancelRecurrenceBtn" style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
-                    <button id="saveRecurrenceBtn" style="padding: 10px 20px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Save</button>
+                    <button id="cancelRecurrenceBtn" style="padding: 10px 20px; background:; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
+                    <button id="saveRecurrenceBtn" style="padding: 10px 20px; background: ; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">Save</button>
                 </div>
             </div>
         `;
@@ -9551,18 +8173,15 @@ function showRecurrenceModal(task: Task): void {
         });
     }
     
-    // Set current value
     const select = document.getElementById('recurrenceTypeSelect') as HTMLSelectElement;
     select.value = task.recurrenceType || 'None';
     
-    // Update current recurrence display
     const currentDisplay = document.getElementById('currentRecurrenceDisplay') as HTMLElement;
     if (currentDisplay) {
         currentDisplay.textContent = task.recurrenceType || 'None';
-        currentDisplay.style.color = task.recurrenceType && task.recurrenceType !== 'None' ? '#ff0080' : '#666';
+        currentDisplay.style.color = task.recurrenceType && task.recurrenceType !== 'None' ? '' : '#666';
     }
     
-    // Store task ID
     modal.setAttribute('data-current-task-id', task.id || task.row.dataset.taskId || '');
     
     modal.style.display = 'block';
@@ -9609,62 +8228,22 @@ function createSampleData(): void {
     }, 100);
 }
 
-function addSortStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = `
-        #mainHeader th {
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s;
-            position: relative;
-        }
-        
-        #mainHeader th:hover {
-            background-color: #fff0f5;
-        }
-        
-        .sort-icon {
-            display: inline-block;
-            margin-left: 5px;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        /* Ensure sub-list rows are full width */
-        .main-list-row td,
-        .sub-list-row td {
-            padding: 0 !important;
-            background: inherit;
-        }
-        
-        .list-header,
-        .sublist-header {
-            width: 100%;
-            box-sizing: border-box;
-        }
-    `;
-    document.head.appendChild(style);
-}
+
 
 // ================================
 // RECURRENCE TYPE EDITOR
 // ================================
-
-// Make recurrence type cells clickable
 function makeRecurrenceEditable(): void {
     console.log('Making recurrence cells editable...');
     
-    // Find all recurrence type cells (extra cells with data-column="recurrenceType")
     document.querySelectorAll('.extra-cell[data-column="recurrenceType"]').forEach(cellElement => {
         const cell = cellElement as HTMLElement;
-        // Make it look clickable
         cell.style.cursor = 'pointer';
         cell.style.transition = 'all 0.2s';
         cell.title = 'Click to change recurrence type';
         
-        // Add hover effect
         cell.addEventListener('mouseenter', () => {
-            cell.style.backgroundColor = '#fff0f5';
+            cell.style.backgroundColor = '';
             cell.style.transform = 'scale(1.02)';
             cell.style.fontWeight = 'bold';
         });
@@ -9675,25 +8254,21 @@ function makeRecurrenceEditable(): void {
             cell.style.fontWeight = '';
         });
         
-        // Remove existing listeners to avoid duplicates
         const newCell = cell.cloneNode(true) as HTMLElement;
         if (cell.parentNode) {
             cell.parentNode.replaceChild(newCell, cell);
         }
         
-        // Add click handler
         newCell.addEventListener('click', (e: MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
             
-            // Find the parent row and task
             const row = newCell.closest('tr') as HTMLTableRowElement;
             if (!row) return;
             
             const task = tasks.find(t => t.row === row);
             if (!task) return;
             
-            // Get current recurrence value
             const currentValue = newCell.textContent?.trim() || '';
             
             showRecurrenceTypeModal(task, newCell, currentValue);
@@ -9701,153 +8276,120 @@ function makeRecurrenceEditable(): void {
     });
 }
 
-// Show recurrence type selection modal
 function showRecurrenceTypeModal(task: Task, cell: HTMLElement, currentValue: string): void {
-    // Remove any existing modal
     const existingModal = document.getElementById('recurrenceTypeModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    // Create modal
+    if (existingModal) existingModal.remove();
+
     const modal = document.createElement('div');
     modal.id = 'recurrenceTypeModal';
-    modal.className = 'modal';
-    modal.style.display = 'block';
-    modal.style.zIndex = '10000';
-    
+    modal.className = 'modal show';
+
     modal.innerHTML = `
-        <div class="modal-content" style="width: 450px; max-width: 90%; margin: 10% auto; padding: 25px; position: relative; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-            <span class="close" style="position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #999;">&times;</span>
-            <h3 style="color: #ff0080; margin-bottom: 20px; margin-top: 0;">Set Recurrence Type</h3>
+        <div class="modal-content recurrence-modal">
+            <span class="close">&times;</span>
+            <h3 class="modal-title">Set Recurrence Type</h3>
             
-            <div style="margin: 20px 0;">
-                <div style="margin-bottom: 20px; padding: 12px; background: #f9f9f9; border-radius: 6px; border-left: 3px solid #ff0080;">
-                    <div style="font-size: 13px; color: #666; margin-bottom: 5px;">Task:</div>
-                    <div style="font-weight: 500; font-size: 15px;">${task.name || task.taskNameCell?.querySelector('span')?.textContent || 'Task'}</div>
+            <div class="modal-body">
+
+                <div class="task-info-box">
+                    <div class="task-label">Task:</div>
+                    <div class="task-name">
+                        ${task.name || task.taskNameCell?.querySelector('span')?.textContent || 'Task'}
+                    </div>
                 </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Current Recurrence</label>
-                    <div id="currentRecurrenceDisplay" style="padding: 10px; background: #f0f0f0; border-radius: 4px; font-weight: 500; color: ${currentValue !== 'None' ? '#ff0080' : '#666'};">
+
+                <div class="form-group">
+                    <label>Current Recurrence</label>
+                    <div id="currentRecurrenceDisplay" 
+                         class="current-recurrence ${currentValue !== 'None' ? 'active' : ''}">
                         ${currentValue || 'None'}
                     </div>
                 </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">Select Recurrence Type</label>
-                    <select id="recurrenceTypeSelect" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
-                        <optgroup label="Recurring Tasks" style="font-weight: bold; color: #ff0080;">
+
+                <div class="form-group">
+                    <label>Select Recurrence Type</label>
+                    <select id="recurrenceTypeSelect" class="recurrence-select">
+                        <optgroup label="Recurring Tasks">
                             <option value="Every Period" ${currentValue === 'Every Period' ? 'selected' : ''}>Every Period</option>
                             <option value="Quarterly" ${currentValue === 'Quarterly' ? 'selected' : ''}>Quarterly</option>
                             <option value="Annual" ${currentValue === 'Annual' ? 'selected' : ''}>Annual</option>
                         </optgroup>
-                        <optgroup label="Non-Recurring Tasks" style="font-weight: bold; color: #00cfff;">
+                        <optgroup label="Non-Recurring Tasks">
                             <option value="Multiple" ${currentValue === 'Multiple' ? 'selected' : ''}>Multiple</option>
                             <option value="Custom" ${currentValue === 'Custom' ? 'selected' : ''}>Custom</option>
                             <option value="None" ${currentValue === 'None' ? 'selected' : ''}>None</option>
                         </optgroup>
                     </select>
                 </div>
-                
-                <div style="color: #666; font-size: 13px; padding: 12px; background: #f9f9f9; border-radius: 4px; border-left: 3px solid #ff0080; line-height: 1.5;">
-                    <strong>Note:</strong> Recurrence type determines the task's border color:<br>
-                    <span style="display: inline-block; width: 12px; height: 12px; background: #808080; margin: 5px 5px 0 0; border-radius: 2px;"></span> Gray = Recurring (Every Period, Quarterly, Annual)<br>
-                    <span style="display: inline-block; width: 12px; height: 12px; background: #00cfff; margin: 5px 5px 0 0; border-radius: 2px;"></span> Blue = Non-recurring (None, Multiple, Custom)
+
+                <div class="note-box">
+                    <strong>Note:</strong> Recurrence type determines the task's border color:
+                    <div class="note-item">
+                        <span class="color-box gray"></span> Gray = Recurring
+                    </div>
+                    <div class="note-item">
+                        <span class="color-box blue"></span> Blue = Non-recurring
+                    </div>
                 </div>
             </div>
-            
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
-                <button id="cancelRecurrenceTypeBtn" style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">Cancel</button>
-                <button id="saveRecurrenceTypeBtn" style="padding: 10px 20px; background: #ff0080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;">Save</button>
+
+            <div class="modal-footer">
+                <button id="cancelRecurrenceTypeBtn" class="btn btn-cancel">Cancel</button>
+                <button id="saveRecurrenceTypeBtn" class="btn btn-save">Save</button>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
-    // Store references
+
     (window as any).currentRecurrenceTask = task;
     (window as any).currentRecurrenceCell = cell;
-    
-    // Close button handler
-    (modal.querySelector('.close') as HTMLElement).addEventListener('click', () => {
-        modal.remove();
-    });
-    
-    // Cancel button handler
-    (document.getElementById('cancelRecurrenceTypeBtn') as HTMLButtonElement).addEventListener('click', () => {
-        modal.remove();
-    });
-    
-    // Save button handler
-    (document.getElementById('saveRecurrenceTypeBtn') as HTMLButtonElement).addEventListener('click', () => {
+
+    modal.querySelector('.close')?.addEventListener('click', () => modal.remove());
+    document.getElementById('cancelRecurrenceTypeBtn')?.addEventListener('click', () => modal.remove());
+
+    document.getElementById('saveRecurrenceTypeBtn')?.addEventListener('click', () => {
         const select = document.getElementById('recurrenceTypeSelect') as HTMLSelectElement;
         const newValue = select.value;
-        
-        console.log('Saving new recurrence value:', newValue);
-        
-        // Update the cell
+
         if ((window as any).currentRecurrenceCell) {
             (window as any).currentRecurrenceCell.textContent = newValue;
-            
-            // Update task object
-            if ((window as any).currentRecurrenceTask) {
-                const currentTask = (window as any).currentRecurrenceTask as Task;
+
+            const currentTask = (window as any).currentRecurrenceTask as Task;
+            if (currentTask) {
                 currentTask.recurrenceType = newValue;
-                
-                // Update row classes based on recurrence type
+
                 const row = currentTask.row;
                 if (row) {
                     row.classList.remove('recurring-task', 'non-recurring-task');
-                    
-                    // Check if it's a recurring task (Every Period, Quarterly, Annual)
+
                     const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
-                    if (recurringOptions.indexOf(newValue) >= 0) {
-                        row.classList.add('recurring-task');
-                    } else {
-                        row.classList.add('non-recurring-task');
-                    }
-                    
+
                     row.setAttribute('data-recurrence-type', newValue);
                 }
             }
-            
-            // Save to localStorage
+
             setTimeout(() => saveAllData(), 100);
-            
             showNotification(`Recurrence type set to: ${newValue}`);
         }
-        
+
         modal.remove();
     });
-    
-    // Click outside to close
+
     modal.addEventListener('click', (e: MouseEvent) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
+        if (e.target === modal) modal.remove();
     });
-    
-    // Focus the select for better UX
+
     setTimeout(() => {
-        const select = document.getElementById('recurrenceTypeSelect') as HTMLSelectElement;
-        if (select) select.focus();
+        (document.getElementById('recurrenceTypeSelect') as HTMLSelectElement)?.focus();
     }, 100);
 }
-
-// Initialize recurrence editor with retry mechanism
 function initializeRecurrenceEditor(): void {
     console.log('Initializing Recurrence Type Editor...');
     
-    // Add styles
-    addRecurrenceEditorStyles();
     
-    // Try to make cells clickable immediately
     makeRecurrenceCellsClickable();
-    
-    // Also try after short delays to catch dynamically added cells
-    setTimeout(() => {
+        setTimeout(() => {
         console.log('Retry 1: Making recurrence cells clickable');
         makeRecurrenceCellsClickable();
     }, 500);
@@ -9862,7 +8404,6 @@ function initializeRecurrenceEditor(): void {
         makeRecurrenceCellsClickable();
     }, 2000);
     
-    // Observe for new rows being added
     const observer = new MutationObserver((mutations) => {
         let shouldRetry = false;
         
@@ -9889,73 +8430,55 @@ function initializeRecurrenceEditor(): void {
 function makeRecurrenceCellsClickable(): void {
     console.log('Making recurrence cells clickable...');
     
-    // Find all recurrence type cells
     const recurrenceCells = document.querySelectorAll('.extra-cell[data-column="recurrenceType"]');
     console.log('Found recurrence cells:', recurrenceCells.length);
     
     recurrenceCells.forEach((cellElement, index) => {
         const cell = cellElement as HTMLElement;
-        // Skip if already initialized
         if (cell.classList.contains('recurrence-initialized')) {
             return;
         }
         
-        // Mark as initialized
         cell.classList.add('recurrence-initialized');
-        
-        // Make it look clickable
-        cell.style.cursor = 'pointer';
+                cell.style.cursor = 'pointer';
         cell.style.transition = 'all 0.2s ease';
         cell.style.userSelect = 'none';
         cell.setAttribute('title', 'Click to change recurrence type');
         
-        // Remove any existing click listeners by cloning
         const newCell = cell.cloneNode(true) as HTMLElement;
         if (cell.parentNode) {
             cell.parentNode.replaceChild(newCell, cell);
         }
-        
-        // Add hover effects
+
         newCell.addEventListener('mouseenter', function(this: HTMLElement) {
-            this.style.backgroundColor = '#fff0f5';
-            this.style.transform = 'scale(1.02)';
-            this.style.fontWeight = 'bold';
-            this.style.boxShadow = '0 2px 4px rgba(255,0,128,0.2)';
+            
         });
         
         newCell.addEventListener('mouseleave', function(this: HTMLElement) {
-            this.style.backgroundColor = '';
-            this.style.transform = 'scale(1)';
-            this.style.fontWeight = '';
-            this.style.boxShadow = 'none';
+            
         });
         
-        // Add click handler
         newCell.addEventListener('click', function(this: HTMLElement, e: MouseEvent) {
             e.stopPropagation();
             e.preventDefault();
             
             console.log('Recurrence cell clicked!');
             
-            // Find the parent row
             const row = this.closest('tr') as HTMLTableRowElement;
             if (!row) {
                 console.error('No parent row found');
                 return;
             }
             
-            // Find the task
             const task = tasks.find(t => t.row === row);
             if (!task) {
                 console.error('No task found for row');
                 return;
             }
             
-            // Get current value
             const currentValue = this.textContent?.trim() || 'None';
             console.log('Current value:', currentValue);
             
-            // Show the modal
             showRecurrenceTypeModal(task, this, currentValue);
         });
         
@@ -9963,80 +8486,13 @@ function makeRecurrenceCellsClickable(): void {
     });
 }
 
-// Add styles for recurrence editor
-function addRecurrenceEditorStyles(): void {
-    // Check if styles already exist
-    if (document.getElementById('recurrence-editor-styles')) return;
-    
-    const style = document.createElement('style');
-    style.id = 'recurrence-editor-styles';
-    style.textContent = `
-        .extra-cell[data-column="recurrenceType"] {
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            font-weight: 500;
-            position: relative;
-            user-select: none;
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:hover {
-            background-color: #fff0f5 !important;
-            transform: scale(1.02);
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(255,0,128,0.2) !important;
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:active {
-            transform: scale(0.98);
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:empty:before,
-        .extra-cell[data-column="recurrenceType"]:contains("None") {
-            color: #666;
-        }
-        
-        .extra-cell[data-column="recurrenceType"]:not(:contains("None")) {
-            color: #ff0080;
-        }
-        
-        #recurrenceTypeModal .modal-content {
-            animation: slideIn 0.3s ease;
-        }
-        
-        #recurrenceTypeSelect {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        #recurrenceTypeSelect:hover {
-            border-color: #ff0080 !important;
-        }
-        
-        #recurrenceTypeSelect:focus {
-            outline: none;
-            border-color: #ff0080 !important;
-            box-shadow: 0 0 0 3px rgba(255, 0, 128, 0.1);
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateY(-30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-}
+
 
 // ================================
 // FILE IMPORT FUNCTIONS
 // ================================
 
-let importedTasksData: any[] = []; // Store parsed tasks from file
+let importedTasksData: any[] = [];
 
 function initializeFileImport(): void {
     console.log('Initializing file import...');
@@ -10051,12 +8507,10 @@ function initializeFileImport(): void {
     
     if (!dropArea || !fileInput || !browseBtn || !cancelBtn || !processBtn) return;
     
-    // Browse button click
     browseBtn.addEventListener('click', () => {
         fileInput.click();
     });
     
-    // File input change
     fileInput.addEventListener('change', (e: Event) => {
         const files = (e.target as HTMLInputElement).files;
         if (files && files.length > 0) {
@@ -10064,23 +8518,22 @@ function initializeFileImport(): void {
         }
     });
     
-    // Drag and drop events
     dropArea.addEventListener('dragover', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#00cfff';
-        dropArea.style.backgroundColor = '#e6f7ff';
+        dropArea.style.borderColor = '';
+        dropArea.style.backgroundColor = '';
     });
     
     dropArea.addEventListener('dragleave', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ff0080';
-        dropArea.style.backgroundColor = '#fff0f5';
+        dropArea.style.borderColor = '';
+        dropArea.style.backgroundColor = '';
     });
     
     dropArea.addEventListener('drop', (e: DragEvent) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ff0080';
-        dropArea.style.backgroundColor = '#fff0f5';
+        dropArea.style.borderColor = '';
+        dropArea.style.backgroundColor = '';
         
         const files = e.dataTransfer?.files;
         if (files && files.length > 0) {
@@ -10088,13 +8541,11 @@ function initializeFileImport(): void {
         }
     });
     
-    // Cancel button
     cancelBtn.addEventListener('click', () => {
         resetImportModal();
         (document.getElementById('importTasksModal') as HTMLElement).style.display = 'none';
     });
     
-    // Process import button
     processBtn.addEventListener('click', () => {
         importTasks();
     });
@@ -10112,7 +8563,6 @@ function initializeFileImport(): void {
             parseTXT(file);
         } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
             showNotification('Excel support coming soon! Please use CSV for now.');
-            // For now, show sample format
             showSampleFormat();
         } else {
             alert('Unsupported file format. Please use CSV, JSON, or TXT.');
@@ -10232,17 +8682,17 @@ function initializeFileImport(): void {
         
         const previewHtml = tasks.slice(0, 5).map(task => `
             <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${task.name}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${task.owner}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${task.reviewer}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">${task.dueDate || 'Not set'}</td>
+                <td">${task.name}</td>
+                <td">${task.owner}</td>
+                <td">${task.reviewer}</td>
+                <td">${task.dueDate || 'Not set'}</td>
             </tr>
         `).join('');
         
         if (tasks.length > 5) {
             previewBody.innerHTML = previewHtml + `
                 <tr>
-                    <td colspan="4" style="padding: 8px; text-align: center; color: #666; font-style: italic;">
+                    <td colspan="4">
                         ... and ${tasks.length - 5} more tasks
                     </td>
                 </tr>
@@ -10255,7 +8705,7 @@ function initializeFileImport(): void {
         
         const countDisplay = document.createElement('div');
         countDisplay.id = 'importPreviewCount';
-        countDisplay.style.cssText = 'margin-top: 10px; font-size: 13px; color: #ff0080; font-weight: 500;';
+        countDisplay.style.cssText = '';
         countDisplay.textContent = `Total ${tasks.length} task(s) ready to import`;
         
         previewArea.appendChild(countDisplay);
@@ -10273,21 +8723,17 @@ function initializeFileImport(): void {
         let targetList: MainList | null = null;
         
         if (importTarget === 'newList') {
-            // Create new list
             const listName = prompt('Enter name for new list:', 'Imported Tasks ' + new Date().toLocaleDateString());
             if (!listName) return;
             
             targetList = createMainList(listName);
             
-            // Create a sublist
             setTimeout(() => {
                 const subList = createSubList(targetList!, 'Imported Tasks');
                 
-                // Import tasks to this sublist
                 importTasksToSublist(subList, importedTasksData, skipDuplicates);
             }, 100);
         } else {
-            // Add to current list (last created sublist)
             if (subLists.length === 0) {
                 alert('Please create a list first');
                 return;
@@ -10337,26 +8783,18 @@ function initializeFileImport(): void {
 // ================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Add styles
-    addStyles();
-    addSortStyles();
+   
     
-    // Load saved column visibility
     loadColumnVisibility();
     
-    // Create modals
     createModals();
     
-    // Initialize data
     initializeData();
     
-    // Clear old structure and initialize new clean structure
     initializeCleanStructure();
     
-    // Initialize event listeners
     initializeEventListeners();
     
-    // Initialize all features
     setTimeout(() => {
         addExtraColumns();
         addDataCells();
@@ -10367,10 +8805,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeDeleteButton();
         makeExistingTasksEditable();
         
-        // Initialize column sorting
         initializeColumnSorting();
-        
-        // Custom Grid button
         const btn = document.getElementById('customGridBtn');
         if (btn) btn.addEventListener('click', showCustomizeGridModal);
         
@@ -10379,13 +8814,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeTaskDropdown();
         initializeSortButton();
         
-        // IMPORTANT: Document styles pehle add karo
-        addDocumentStyles(); // Pehle styles add karo
         
-        // Phir document managers initialize karo - SIRF EK BAAR
-        initializeTDocManager();    // TDoc ke liye
-        initializeDocumentManager(); // CDoc ke liye
-        // Force refresh
+        initializeTDocManager();    
         refreshLinkedAccountsColumn();
         initializeStatus();
         initializeDragAndDrop();
@@ -10397,43 +8827,30 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeRecurrenceEditor();
         initializeSimpleUserColumns();
         initializeFileImport();
-
-        // Make sure linked accounts column is visible
         const linkedAccountsCol = columnConfig.find(c => c.key === 'linkedAccounts');
         if (linkedAccountsCol) linkedAccountsCol.visible = true;
         
-        // Refresh linked accounts after everything is loaded
         setTimeout(() => {
             refreshLinkedAccountsColumn();
         }, 100);
-
-        // TRY TO LOAD SAVED DATA FIRST
         const hasSavedData = loadAllData();
         
-        // If no saved data exists, create sample data
         if (!hasSavedData) {
             createSampleData();
         }
         
-        // Force update document columns AFTER data is loaded
         setTimeout(() => {
             console.log('Force updating document columns...');
             updateTDocColumn();
             updateCDocColumn();
             
-            // Refresh linked accounts again after data is loaded
             refreshLinkedAccountsColumn();
         }, 200);
         
-        // Setup auto-save after everything is initialized
         setupAutoSave();
         
-        // Save initial state
         setTimeout(() => saveAllData(), 500);
         
         console.log('Task Viewer fully initialized with persistence');
     }, 500);
 });
-
-// Note: The export statement is removed because outFile doesn't support it with module system
-// If you need to export, use a different module system like AMD or System
