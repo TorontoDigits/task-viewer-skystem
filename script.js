@@ -1830,7 +1830,7 @@ function attachMainRowEvents(row, mainList) {
 
     row.querySelector('.add-task-option').addEventListener('click', (e) => {
         e.stopPropagation();
-        showCreateTaskModalForList(mainList); // Using the refactored task modal
+        showCreateTaskModalForList(mainList); 
         dropdown.classList.remove('show-dropdown');
     });
 
@@ -1867,13 +1867,13 @@ function showCreateTaskModalForList(mainList, subList = null) {
 
     const userOptions = `
         <option value="">None</option>
-        <option value="PK">PK - Palakh Khanna (palakh@skystem.com)</option>
-        <option value="SM">SM - Sarah Miller (sarah@skystem.com)</option>
-        <option value="MP">MP - Mel Preparer (mel@skystem.com)</option>
-        <option value="PP">PP - Poppy Pan (poppy@skystem.com)</option>
-        <option value="JS">JS - John Smith (john@skystem.com)</option>
-        <option value="EW">EW - Emma Watson (emma@skystem.com)</option>
-        <option value="DB">DB - David Brown (david@skystem.com)</option>
+        <option value="PK">PK - Palakh Khanna 
+        <option value="SM">SM - Sarah Miller 
+        <option value="MP">MP - Mel Preparer 
+        <option value="PP">PP - Poppy Pan
+        <option value="JS">JS - John Smith 
+        <option value="EW">EW - Emma Watson 
+        <option value="DB">DB - David Brown 
     `;
 
     modal.innerHTML = `
@@ -1893,11 +1893,11 @@ function showCreateTaskModalForList(mainList, subList = null) {
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
                         <div class="form-group">
                             <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Task Name *</label>
-                            <input type="text" id="createTaskName" class="task-input" style="width:100%; border: 1px solid #ddd; padding: 10px; border-radius: 6px;" placeholder="Task description...">
+                            <input type="text" id="createTaskName" class="task-input" style="width:100%; border: 1px solid #ddd; padding: 10px; border-radius: 6px;" placeholder="Task Name">
                         </div>
                         <div class="form-group">
                             <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Task ID</label>
-                            <input type="text" id="createTaskNumber" class="task-input" style="width:100%; background: #fff0f6; border: 1px solid #ffd1e0; padding: 10px; border-radius: 6px; font-weight: bold; color: ${brandColor};" value="${randomID}">
+                            <input type="text" id="createTaskNumber" class="task-input" style="width:100%; background: #fff0f6; border: 1px solid #ffd1e0; padding: 10px; border-radius: 6px; font-weight: bold; color: ${brandColor};" placeholder="Enter a ID">
                         </div>
                     </div>
                     
@@ -1946,7 +1946,7 @@ function showCreateTaskModalForList(mainList, subList = null) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Dependency</label>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px;">Dependentable</label>
                             <select id="createTaskDependent" class="task-input" style="width:100%; border: 1px solid #ddd; padding: 10px;">
                                 <option value="">None</option>
                                 <option>TSK-883</option><option>TSK-470</option>
@@ -2049,7 +2049,6 @@ function showCreateTaskModalForList(mainList, subList = null) {
         close();
     };
 }
-
 
 function collectTaskFormData() {
     return {
