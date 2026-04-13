@@ -12,7 +12,6 @@
 
 /* Modal Styles */
 .modal {
-    display: none;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -2468,7 +2467,380 @@ td:has(.tdoc-icon-container) {
     text-align: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+/* ================================
+   USER SELECTION BACKGROUND EFFECT
+   (Like Sarah Miller in Reviewer)
+   ================================ */
 
+/* Base cell styles for Owner, Approver, Created By */
+.extra-cell[data-column="taskOwner"],
+.extra-cell[data-column="approver"],
+.extra-cell[data-column="createdBy"] {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    position: relative;
+}
+
+/* Hover effect - Light pink background */
+.extra-cell[data-column="taskOwner"]:hover,
+.extra-cell[data-column="approver"]:hover,
+.extra-cell[data-column="createdBy"]:hover {
+    background-color: #fff0f5 !important;
+    transform: scale(1.02);
+}
+
+/* ================================
+   BACKGROUND COLOR ON SELECT - LIKE REVIEWER
+   ================================ */
+
+/* When any user is assigned - Permanent background color */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge) {
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+/* Specific color for different users - Like Sarah Miller gets pink */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-sm),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-sm),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-sm) {
+    background-color: #e3f2fd !important;
+    border-left: 3px solid #00cfff;
+}
+
+/* PK (Palakh Khanna) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-pk),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-pk),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-pk) {
+    background-color: #fff0f5 !important;
+    border-left: 3px solid #ff0080;
+}
+
+/* MP (Mel Preparer) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-mp),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-mp),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-mp) {
+    background-color: #f3e5f5 !important;
+    border-left: 3px solid #9c27b0;
+}
+
+/* PP (Poppy Pan) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-pp),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-pp),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-pp) {
+    background-color: #fff3e0 !important;
+    border-left: 3px solid #ff9800;
+}
+
+/* JS (John Smith) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-js),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-js),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-js) {
+    background-color: #e8f5e9 !important;
+    border-left: 3px solid #4caf50;
+}
+
+/* EW (Emma Watson) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-ew),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-ew),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-ew) {
+    background-color: #ffebee !important;
+    border-left: 3px solid #f44336;
+}
+
+/* DB (David Brown) background */
+.extra-cell[data-column="taskOwner"]:has(.skystemtaskmaster-badge-db),
+.extra-cell[data-column="approver"]:has(.skystemtaskmaster-badge-db),
+.extra-cell[data-column="createdBy"]:has(.skystemtaskmaster-badge-db) {
+    background-color: #efebe9 !important;
+    border-left: 3px solid #795548;
+}
+
+/* ================================
+   ANIMATION WHEN USER IS UPDATED
+   ================================ */
+
+/* Flash effect when user changes */
+@keyframes userUpdateFlash {
+    0% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+    30% {
+        background-color: #ff0080;
+        color: white;
+        transform: scale(1.05);
+    }
+    60% {
+        background-color: #fff0f5;
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+/* Apply flash on update */
+.extra-cell[data-column="taskOwner"]:active,
+.extra-cell[data-column="approver"]:active,
+.extra-cell[data-column="createdBy"]:active {
+    animation: userUpdateFlash 0.3s ease-out;
+}
+
+/* ================================
+   MODAL USER SELECTION STYLES
+   ================================ */
+
+/* User Selection Modal */
+#userSelectionModal .modal-content {
+    animation: slideIn 0.3s ease;
+}
+
+/* User item hover */
+.user-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+
+.user-item:hover {
+    background-color: #f5f5f5;
+    transform: translateX(5px);
+}
+
+/* Selected user in modal */
+.user-item.selected {
+    background-color: #fff0f5;
+    border-left: 3px solid #ff0080;
+}
+
+/* User badge colors */
+.skystemtaskmaster-badge {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: white;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.skystemtaskmaster-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* User Badge Color Variants */
+.skystemtaskmaster-badge-pk { background: #ff0080; }
+.skystemtaskmaster-badge-sm { background: #00cfff; }
+.skystemtaskmaster-badge-mp { background: #9c27b0; }
+.skystemtaskmaster-badge-pp { background: #ff9800; }
+.skystemtaskmaster-badge-js { background: #4caf50; }
+.skystemtaskmaster-badge-ew { background: #f44336; }
+.skystemtaskmaster-badge-db { background: #795548; }
+
+/* ================================
+   TASK OWNER SELECTION MODAL
+   ================================ */
+
+#taskOwnerSelectionModal {
+    z-index: 10000;
+}
+
+#taskOwnerSelectionModal .modal-content {
+    width: 400px;
+    position: relative;
+    z-index: 10001;
+    max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #f5f7fb;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#taskOwnerSelectionModal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eef2f6;
+    padding: 1rem 1.25rem;
+}
+
+#taskOwnerSelectionModal .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: #ffffff;
+    border-top: 1px solid #eef2f6;
+    padding: 0.75rem 1.25rem;
+}
+
+#taskOwnerSelectionModal .close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+#taskOwnerSelectionModal .close:hover {
+    color: #ff0080;
+}
+
+#taskOwnerSelectionModal h3 {
+    color: #ff0080;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Task Info Box */
+#taskOwnerSelectionModal .task-info-box {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 3px solid #ff0080;
+}
+
+/* User List Items */
+#taskOwnerSelectionModal .user-item-modal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#taskOwnerSelectionModal .user-item-modal:hover {
+    background: #f8f8f8;
+    transform: translateX(4px);
+}
+
+#taskOwnerSelectionModal .user-item-modal.current {
+    background: #fff0f5;
+    position: relative;
+}
+
+#taskOwnerSelectionModal .user-item-modal.current::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #ff0080;
+}
+
+/* User Badge in Modal */
+#taskOwnerSelectionModal .user-badge-modal {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* Modal Footer Buttons */
+#taskOwnerSelectionModal .modal-footer-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+#taskOwnerSelectionModal .btn-unassign-modal {
+    padding: 8px 20px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+#taskOwnerSelectionModal .btn-unassign-modal:hover {
+    background: #e0e0e0;
+}
+
+#taskOwnerSelectionModal .btn-close-modal-user {
+    padding: 8px 24px;
+    background: #ff0080;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+#taskOwnerSelectionModal .btn-close-modal-user:hover {
+    background: #e60073;
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    #taskOwnerSelectionModal .modal-content {
+        width: 95%;
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    #taskOwnerSelectionModal .user-item-modal {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    #taskOwnerSelectionModal .user-badge-modal {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    #taskOwnerSelectionModal .modal-footer-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    #taskOwnerSelectionModal .btn-unassign-modal,
+    #taskOwnerSelectionModal .btn-close-modal-user {
+        width: 100%;
+        text-align: center;
+    }
+}
 /* Comment Panel Styles */
 .comment-panel {
     position: fixed;
@@ -2835,7 +3207,6 @@ td:has(.tdoc-icon-container) {
 
 /* Modal */
 .modal {
-    display: none;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -3505,7 +3876,6 @@ optgroup[label="Non-Recurring Tasks"] {
    ============================== */
    
 .modal {
-    display: none;
     position: fixed;
     z-index: 10000;
     left: 0;
@@ -4853,7 +5223,6 @@ optgroup[label="Non-Recurring Tasks"] {
 
 /* Optional: Add a subtle indicator that it's clickable */
 .recurrence-cell-clickable::after {
-    content: '✎';
     position: absolute;
     right: 8px;
     top: 50%;
@@ -5269,7 +5638,6 @@ optgroup[label="Non-Recurring Tasks"] {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 10000;
-    display: none;
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -5280,7 +5648,6 @@ optgroup[label="Non-Recurring Tasks"] {
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-out;
-    margin: 5% auto;
 }
 
 .modal-sm {
@@ -7821,7 +8188,6 @@ optgroup[label="Non-Recurring Tasks"] {
     right: auto;
     left: 10px;
 }
-/* Status Change Modal */
 .status-modal {
     position: fixed;
     top: 0;
@@ -7836,7 +8202,6 @@ optgroup[label="Non-Recurring Tasks"] {
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Modal Content */
 .status-modal-content {
     width: 350px;
     max-width: 90%;
@@ -7848,7 +8213,6 @@ optgroup[label="Non-Recurring Tasks"] {
     padding: 25px;
 }
 
-/* Modal Title */
 .status-modal-title {
     color: #ff0080;
     margin-top: 0;
@@ -7857,17 +8221,14 @@ optgroup[label="Non-Recurring Tasks"] {
     font-weight: 600;
 }
 
-/* Modal Body */
 .status-modal-body {
     margin: 20px 0;
 }
 
-/* Status Field */
 .status-field {
     margin-bottom: 15px;
 }
 
-/* Status Label */
 .status-label {
     display: block;
     margin-bottom: 8px;
@@ -7876,7 +8237,6 @@ optgroup[label="Non-Recurring Tasks"] {
     font-size: 14px;
 }
 
-/* Current Status Display */
 .current-status-display {
     padding: 10px;
     background: #f0f0f0;
@@ -7887,7 +8247,6 @@ optgroup[label="Non-Recurring Tasks"] {
     transition: all 0.2s ease;
 }
 
-/* Status-specific colors for current status */
 .current-status-display[data-status="Not Started"] {
     border-left-color: #999;
     background: #f5f5f5;
@@ -7928,7 +8287,6 @@ optgroup[label="Non-Recurring Tasks"] {
     background: #ffebee;
 }
 
-/* Status Select Dropdown */
 .status-select {
     width: 100%;
     padding: 10px;
@@ -7950,7 +8308,6 @@ optgroup[label="Non-Recurring Tasks"] {
     box-shadow: 0 0 0 3px rgba(255, 0, 128, 0.1);
 }
 
-/* Status options styling */
 .status-select option {
     padding: 8px;
 }
@@ -7964,7 +8321,6 @@ optgroup[label="Non-Recurring Tasks"] {
 .status-select option[value="Hold"] { color: #9c27b0; }
 .status-select option[value="Overdue"] { color: #d32f2f; }
 
-/* Status Comment Textarea */
 .status-comment {
     width: 100%;
     padding: 10px;
@@ -7986,7 +8342,6 @@ optgroup[label="Non-Recurring Tasks"] {
     color: #999;
 }
 
-/* Comment error state */
 .status-comment-error {
     border-color: #f44336 !important;
 }
@@ -7996,7 +8351,6 @@ optgroup[label="Non-Recurring Tasks"] {
     box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1) !important;
 }
 
-/* Character counter */
 .status-comment-count {
     text-align: right;
     font-size: 11px;
@@ -8009,7 +8363,6 @@ optgroup[label="Non-Recurring Tasks"] {
     color: #f44336;
 }
 
-/* Modal Buttons */
 .status-modal-buttons {
     display: flex;
     justify-content: flex-end;
@@ -8017,7 +8370,6 @@ optgroup[label="Non-Recurring Tasks"] {
     margin-top: 20px;
 }
 
-/* Cancel Button */
 .btn-cancel-status {
     padding: 8px 16px;
     background: #f0f0f0;
@@ -8038,7 +8390,6 @@ optgroup[label="Non-Recurring Tasks"] {
     transform: translateY(0);
 }
 
-/* Update Status Button */
 .btn-update-status {
     padding: 8px 16px;
     background: #ff0080;
@@ -8067,7 +8418,6 @@ optgroup[label="Non-Recurring Tasks"] {
     cursor: not-allowed;
 }
 
-/* Loading State for Update Button */
 .btn-update-status.loading {
     position: relative;
     pointer-events: none;
@@ -8088,7 +8438,6 @@ optgroup[label="Non-Recurring Tasks"] {
     animation: spin 0.6s linear infinite;
 }
 
-/* Success Animation for Update */
 @keyframes updateSuccess {
     0% {
         transform: scale(1);
@@ -8106,7 +8455,6 @@ optgroup[label="Non-Recurring Tasks"] {
     animation: updateSuccess 0.3s ease-out;
 }
 
-/* Close Button */
 .status-modal .close {
     position: absolute;
     right: 15px;
@@ -8121,7 +8469,6 @@ optgroup[label="Non-Recurring Tasks"] {
     color: #ff0080;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -8176,7 +8523,6 @@ optgroup[label="Non-Recurring Tasks"] {
     }
 }
 
-/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     .status-modal-content {
         background: #2d2d2d;
@@ -8225,7 +8571,6 @@ optgroup[label="Non-Recurring Tasks"] {
     }
 }
 
-/* Accessibility - Focus Visible */
 .btn-cancel-status:focus-visible,
 .btn-update-status:focus-visible,
 .status-select:focus-visible,
@@ -8235,7 +8580,6 @@ optgroup[label="Non-Recurring Tasks"] {
     outline-offset: 2px;
 }
 
-/* Reduced Motion Preference */
 @media (prefers-reduced-motion: reduce) {
     .status-modal,
     .status-modal-content {
@@ -8257,7 +8601,6 @@ optgroup[label="Non-Recurring Tasks"] {
     }
 }
 
-/* High Contrast Mode */
 @media (prefers-contrast: high) {
     .btn-update-status {
         background: #ff0080;
@@ -8275,7 +8618,6 @@ optgroup[label="Non-Recurring Tasks"] {
     }
 }
 
-/* RTL Support */
 [dir="rtl"] .status-modal .close {
     right: auto;
     left: 15px;
@@ -8378,7 +8720,6 @@ body {
     color: #999;
     font-size: 14px;
 }
-/* Modal Background */
 .tdoc-modal {
     display: none;
     position: fixed;
@@ -8390,7 +8731,6 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* Modal Content Box */
 .tdoc-modal-content {
     background-color: #fff;
     margin: 5% auto;
@@ -8404,7 +8744,6 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Header & Typography */
 .tdoc-modal h3 {
     color: #ff0080;
     margin-bottom: 20px;
@@ -8415,7 +8754,6 @@ body {
     color: #333;
 }
 
-/* Close Button */
 .tdoc-close {
     float: right;
     font-size: 24px;
@@ -8423,7 +8761,6 @@ body {
     cursor: pointer;
 }
 
-/* Upload Section */
 .tdoc-upload-section {
     margin-bottom: 30px;
     background: #f9f9f9;
@@ -8431,7 +8768,6 @@ body {
     border-radius: 8px;
 }
 
-/* Drop Area */
 .tdoc-drop-area {
     border: 2px dashed #ddd;
     border-radius: 8px;
@@ -8452,7 +8788,6 @@ body {
     margin-bottom: 5px;
 }
 
-/* Buttons */
 .btn-browse {
     background: #ff0080;
     color: white;
@@ -8480,7 +8815,6 @@ body {
     cursor: pointer;
 }
 
-/* Lists */
 .tdoc-selected-list {
     max-height: 150px;
     overflow-y: auto;
@@ -8502,12 +8836,10 @@ body {
     display: flex;
     justify-content: flex-end;
 }
-/* File Preview Modal Container */
 .preview-modal {
     display: none;
     position: fixed;
-    z-index: 2000; /* Higher than manager modal */
-    left: 0;
+    z-index: 2000; 
     top: 0;
     width: 100%;
     height: 100%;
@@ -8529,7 +8861,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Data Table Styling */
 .preview-table {
     width: 100%;
     margin: 20px 0;
@@ -8547,7 +8878,6 @@ body {
     width: 30%;
 }
 
-/* Info Box */
 .preview-info-box {
     color: #666;
     font-size: 13px;
@@ -8563,7 +8893,6 @@ body {
     margin-bottom: 20px;
     text-align: center;
 }
-/* Empty State Styling */
 .tdoc-empty-state {
     padding: 40px;
     text-align: center;
@@ -8580,7 +8909,6 @@ body {
     margin-top: 5px;
 }
 
-/* Document Table Styling */
 .tdoc-table {
     width: 100%;
     border-collapse: collapse;
@@ -8604,7 +8932,6 @@ body {
     border-bottom: 1px solid #eee;
 }
 
-/* Table Row Content */
 .tdoc-file-info {
     display: flex;
     align-items: center;
@@ -8620,7 +8947,6 @@ body {
     font-size: 11px;
 }
 
-/* Action Buttons */
 .tdoc-action-btn {
     background: none;
     border: none;
@@ -8636,7 +8962,6 @@ body {
 
 .btn-view { color: #ff0080; }
 .btn-delete { color: #dc3545; }
-/* Account Modal Specifics */
 .account-info-box {
     margin-bottom: 20px;
     padding: 12px;
@@ -8745,7 +9070,6 @@ body {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
-/* Account Linking Grid Layout */
 .link-modal-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -8753,7 +9077,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Form Styling */
 .form-group {
     margin-bottom: 15px;
 }
@@ -8769,7 +9092,7 @@ body {
     padding: 10px;
     border: 2px solid #ddd;
     border-radius: 6px;
-    box-sizing: border-box; /* Ensures padding doesn't break width */
+    box-sizing: border-box; 
 }
 
 .form-input-full:focus {
@@ -8791,7 +9114,6 @@ body {
     border-top: 1px solid #eee;
     padding-top: 20px;
 }
-/* Container for the account column */
 .account-display {
     display: flex;
     flex-wrap: wrap;
@@ -8800,7 +9122,6 @@ body {
     align-items: center;
 }
 
-/* Account Number Badges */
 .account-badge {
     display: inline-block;
     background: #ff0080;
@@ -8819,7 +9140,6 @@ body {
     background-color: #e50072;
 }
 
-/* Add "+" Icon */
 .add-account-icon {
     display: inline-block;
     width: 20px;
@@ -8839,7 +9159,6 @@ body {
     background-color: #ff0080;
     color: white;
 }
-/* Specific width for the sort modal */
 .modal-sort {
     width: 350px;
 }
@@ -8861,7 +9180,6 @@ body {
     border-color: #ff0080;
     outline: none;
 }
-/* Base badge style for common properties */
 .task-count-badge, 
 .list-count-badge {
     color: white;
@@ -8873,16 +9191,13 @@ body {
     transition: all 0.2s ease;
 }
 
-/* Pink Badge for Sub-lists */
 .task-count-badge {
     background: #ff0080;
 }
 
-/* Cyan/Blue Badge for Main Lists */
 .list-count-badge {
     background: #00cfff;
 }
-/* Filter Options Section */
 .filter-options-container {
     margin-top: 20px;
     padding: 12px;
@@ -8912,7 +9227,6 @@ body {
     font-size: 14px;
     user-select: none;
 }
-/* Download Modal Specifics */
 .modal-download {
     width: 300px;
 }
@@ -8924,7 +9238,6 @@ body {
     margin: 20px 0;
 }
 
-/* Base Download Button Style */
 .btn-download {
     display: flex;
     align-items: center;
@@ -8948,11 +9261,9 @@ body {
     transform: scale(0.98);
 }
 
-/* Format Colors */
 .btn-excel { background-color: #1D6F42; } /* Excel Green */
 .btn-csv   { background-color: #00cfff; } /* Cyan */
 .btn-json  { background-color: #9c27b0; } /* Purple */
-/* Document Table Container */
 .tdoc-table {
     width: 100%;
     border-collapse: collapse;
@@ -8980,7 +9291,6 @@ body {
     vertical-align: middle;
 }
 
-/* Document Empty State */
 .tdoc-empty-state {
     padding: 40px;
     text-align: center;
@@ -8992,7 +9302,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* Action Buttons */
 .tdoc-action-btn {
     background: none;
     border: none;
@@ -9008,12 +9317,11 @@ body {
 
 .tdoc-view-btn { color: #ff0080; }
 .tdoc-delete-btn { color: #dc3545; }
-/* Customization Grid Layout */
 .grid-config-container {
     margin: 20px 0;
     max-height: 400px;
     overflow-y: auto;
-    padding-right: 5px; /* Space for scrollbar */
+    padding-right: 5px; 
 }
 
 .grid-selection-layout {
@@ -9053,7 +9361,6 @@ body {
     font-size: 11px;
     font-style: italic;
 }
-/* Create Task Modal Specifics */
 .task-form-section {
     background: #f9f9f9;
     padding: 16px;
@@ -9103,7 +9410,6 @@ body {
     content: " *";
     color: #ff0080;
 }
-/* Dependency Modal Styles */
 .dependency-list {
     margin: 20px 0;
     border-top: 1px solid #eee;
@@ -9133,7 +9439,6 @@ body {
     margin-top: 4px;
 }
 
-/* Flash effect for navigating to a task */
 @keyframes highlightFlash {
     0% { background-color: #fff0f5; }
     100% { background-color: transparent; }
@@ -9142,7 +9447,6 @@ body {
 .task-row-highlight {
     animation: highlightFlash 2s ease-out forwards;
 }
-/* Create Task Modal Specifics */
 .modal-header-gradient {
     background: linear-gradient(135deg, #ff0080 0%, #e50072 100%);
     padding: 20px;
@@ -9184,7 +9488,6 @@ body {
     font-size: 14px;
 }
 
-/* Reusable slide animation */
 .animate-slide-down {
     animation: slideDown 0.3s ease forwards;
 }
@@ -9193,9 +9496,8 @@ body {
     from { transform: translateY(-30px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-/* User Picker Modal Styles */
 #userListContainer {
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
     border: 1px solid #eee;
     border-radius: 8px;
@@ -9217,11 +9519,11 @@ body {
 
 .user-item:hover {
     background-color: #fcfcfc;
-    padding-left: 15px; /* Subtle slide effect on hover */
+    padding-left: 15px; 
 }
 
 .user-item.is-selected {
-    background-color: #fff0f5; /* Light pink background for current user */
+    background-color: #fff0f5; 
 }
 
 .user-avatar-circle {
@@ -9421,7 +9723,6 @@ body {
     color: #333;
 }
 
-/* Task Name + Checkbox */
 .skystemtaskmaster-task-name {
     display: flex;
     align-items: center;
@@ -9434,7 +9735,6 @@ body {
     cursor: pointer;
 }
 
-/* Status Badges */
 .skystemtaskmaster-status-badge {
     padding: 4px 10px;
     border-radius: 20px;
@@ -9458,7 +9758,6 @@ body {
     color: #28a745;
 }
 
-/* Owner / Reviewer Badges */
 .skystemtaskmaster-badge {
     display: inline-block;
     width: 30px;
@@ -9479,7 +9778,6 @@ body {
     background: #00cfff;
 }
 
-/* Days */
 .skystemtaskmaster-days-positive {
     color: #28a745;
     font-weight: 600;
@@ -9490,7 +9788,6 @@ body {
     font-weight: 600;
 }
 
-/* Sub Task Header Row */
 .skystemtaskmaster-subtask-header {
     background: #f8d7e3;
     font-weight: 600;
@@ -9500,7 +9797,6 @@ body {
    CREATE SUBLIST & CREATE TASK MODAL STYLES
    ================================ */
 
-/* Create SubList Modal */
 #createSubListModal .modal-content {
     width: 350px;
     max-width: 95%;
@@ -9513,11 +9809,14 @@ body {
 }
 
 .sublist-modal-title::before {
-    content: '📁';
+    content: '\f07b';  
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
     font-size: 18px;
+    margin-right: 8px;
+    color: #ff0080;
 }
 
-/* Form Styles */
 .form-label {
     display: block;
     margin-bottom: 6px;
@@ -9545,7 +9844,6 @@ body {
     border-color: #ff0080;
 }
 
-/* Create Task Modal */
 #createTaskCompleteModal .modal-content {
     width: 850px;
     max-width: 95%;
@@ -9556,7 +9854,6 @@ body {
     animation: slideDown 0.3s ease;
 }
 
-/* Modal Header Gradient */
 .modal-gradient-header {
     padding: 20px;
     background: linear-gradient(135deg, #ff0080, #cc0066);
@@ -9595,14 +9892,12 @@ body {
     opacity: 0.8;
 }
 
-/* Modal Body Scroll */
 .modal-body-scroll {
     padding: 25px;
     max-height: 75vh;
     overflow-y: auto;
 }
 
-/* Form Sections */
 .form-section {
     margin-bottom: 25px;
     border-left: 4px solid #ff0080;
@@ -9618,7 +9913,6 @@ body {
     font-weight: 600;
 }
 
-/* Grid Layouts */
 .form-grid-2cols {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -9639,7 +9933,6 @@ body {
     margin-top: 15px;
 }
 
-/* Documents Section */
 .documents-section {
     margin-bottom: 25px;
     background: #fffafd;
@@ -9675,7 +9968,6 @@ body {
     border-radius: 4px;
 }
 
-/* Comment Textarea */
 .comment-textarea {
     width: 100%;
     border: 1px solid #ddd;
@@ -9690,7 +9982,6 @@ body {
     border-color: #ff0080;
 }
 
-/* Action Buttons */
 .modal-action-buttons {
     display: flex;
     justify-content: flex-end;
@@ -9741,7 +10032,6 @@ body {
     transform: translateY(0);
 }
 
-/* Create SubList Button */
 .btn-create-sublist {
     width: 100%;
     padding: 10px;
@@ -9759,7 +10049,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     #createTaskCompleteModal .modal-content {
         width: 95%;
@@ -9797,7 +10086,6 @@ body {
     }
 }
 
-/* Animations */
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -9812,13 +10100,11 @@ body {
    CUSTOMIZE GRID MODAL STYLES
    ================================ */
 
-/* Modal Container */
 #customizeGridModal .modal-content {
-    width: 500px;
+    width: 700px;
     max-width: 95%;
 }
 
-/* Modal Header */
 #customizeGridModal .cdoc-header {
     color: #ff0080;
     margin-bottom: 20px;
@@ -9829,7 +10115,6 @@ body {
     gap: 8px;
 }
 
-/* Grid Config Container */
 .grid-config-container {
     margin: 20px 0;
     max-height: 500px;
@@ -9837,14 +10122,12 @@ body {
     padding: 5px;
 }
 
-/* Grid Selection Layout */
 .grid-selection-layout {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
 }
 
-/* Column Option */
 .column-option {
     display: flex;
     align-items: center;
@@ -9885,7 +10168,6 @@ body {
     opacity: 0.6;
 }
 
-/* Mandatory Column Indicator */
 .column-option.mandatory {
     background: #f0f0f0;
     position: relative;
@@ -9900,7 +10182,6 @@ body {
     font-weight: 500;
 }
 
-/* Modal Footer */
 #customizeGridModal .modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -9910,7 +10191,6 @@ body {
     border-top: 1px solid #eee;
 }
 
-/* Grid Buttons */
 .btn-reset-grid {
     padding: 8px 20px;
     background: #f0f0f0;
@@ -9956,7 +10236,6 @@ body {
     transform: translateY(0);
 }
 
-/* Scrollbar Styling */
 .grid-config-container::-webkit-scrollbar {
     width: 8px;
 }
@@ -9975,7 +10254,6 @@ body {
     background: #e60073;
 }
 
-/* Section Divider */
 .grid-section-divider {
     grid-column: 1 / -1;
     margin: 10px 0 5px;
@@ -9986,7 +10264,6 @@ body {
     border-bottom: 1px solid #eee;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
     #customizeGridModal .modal-content {
         width: 95%;
@@ -10019,7 +10296,6 @@ body {
     }
 }
 
-/* Animation */
 @keyframes slideInLeft {
     from {
         opacity: 0;
@@ -10043,13 +10319,11 @@ body {
    FILTER MODAL STYLES
    ================================ */
 
-/* Filter Modal Container */
 #filterModal .modal-content {
     width: 450px;
     max-width: 95%;
 }
 
-/* Filter Modal Header */
 #filterModal .cdoc-header {
     color: #ff0080;
     margin-bottom: 20px;
@@ -10060,12 +10334,10 @@ body {
     gap: 8px;
 }
 
-/* Filter Body */
 .filter-body {
     margin: 20px 0;
 }
 
-/* Form Groups */
 .filter-form-group {
     margin-bottom: 20px;
 }
@@ -10078,7 +10350,6 @@ body {
     font-size: 13px;
 }
 
-/* Filter Select */
 .filter-select {
     width: 100%;
     padding: 10px 12px;
@@ -10100,14 +10371,12 @@ body {
     box-shadow: 0 0 0 3px rgba(255, 0, 128, 0.1);
 }
 
-/* Filter Options Container */
 .filter-options-container {
     margin-top: 20px;
     padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
-/* Checkbox Groups */
 .filter-checkbox-group {
     display: flex;
     align-items: center;
@@ -10136,7 +10405,6 @@ body {
     user-select: none;
 }
 
-/* Modal Footer */
 .filter-modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -10146,7 +10414,6 @@ body {
     border-top: 1px solid #eee;
 }
 
-/* Filter Buttons */
 .btn-clear-filter {
     padding: 8px 20px;
     background: #f0f0f0;
@@ -10189,7 +10456,6 @@ body {
     transform: translateY(0);
 }
 
-/* Responsive */
 @media (max-width: 550px) {
     #filterModal .modal-content {
         width: 95%;
@@ -10226,7 +10492,6 @@ body {
     }
 }
 
-/* Animation */
 @keyframes fadeInScale {
     from {
         opacity: 0;
@@ -10245,7 +10510,6 @@ body {
    ACCOUNT TOOLTIP & MODAL STYLES
    ================================ */
 
-/* Account Tooltip */
 .account-tooltip {
     position: absolute;
     background: white;
@@ -10259,7 +10523,6 @@ body {
     animation: fadeInUp 0.2s ease;
 }
 
-/* Tooltip Header */
 .tooltip-header {
     font-weight: bold;
     color: #ff0080;
@@ -10276,7 +10539,6 @@ body {
     font-size: 18px;
 }
 
-/* Tooltip Content */
 .tooltip-content {
     margin: 12px 0;
 }
@@ -10302,7 +10564,6 @@ body {
     font-weight: 500;
 }
 
-/* Tooltip Actions */
 .tooltip-actions {
     display: flex;
     gap: 10px;
@@ -10344,7 +10605,6 @@ body {
     box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
 }
 
-/* Account Linking Modal */
 #accountLinkingModal {
     z-index: 10000;
 }
@@ -10356,7 +10616,6 @@ body {
     overflow-y: auto;
 }
 
-/* Account Info Box */
 .account-info-box {
     border-left: 3px solid #ff0080;
     padding: 12px 15px;
@@ -10379,7 +10638,6 @@ body {
     font-size: 15px;
 }
 
-/* Two Column Layout */
 .account-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -10387,7 +10645,6 @@ body {
     margin-bottom: 25px;
 }
 
-/* Section Title */
 .account-section-title {
     margin-bottom: 20px;
     color: #ff0080;
@@ -10397,7 +10654,6 @@ body {
     border-bottom: 2px solid #f0f0f0;
 }
 
-/* Form Group */
 .account-form-group {
     margin-bottom: 18px;
 }
@@ -10440,7 +10696,6 @@ body {
     border-color: #ff0080;
 }
 
-/* Multi Select */
 .account-form-multiple {
     width: 100%;
     padding: 8px;
@@ -10466,7 +10721,6 @@ body {
     margin-top: 5px;
 }
 
-/* Number Input Row */
 .number-input-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -10474,7 +10728,6 @@ body {
     margin-bottom: 15px;
 }
 
-/* Modal Footer */
 .account-modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -10518,7 +10771,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 0, 128, 0.3);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .account-form-grid {
         grid-template-columns: 1fr;
@@ -10552,7 +10804,6 @@ body {
     }
 }
 
-/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -10580,7 +10831,6 @@ body {
    TDOC UPLOAD HANDLER STYLES
    ================================ */
 
-/* Drop Area States */
 .tdoc-drop-area {
     transition: all 0.3s ease;
 }
@@ -10595,7 +10845,6 @@ body {
     background-color: transparent;
 }
 
-/* Selected Files List */
 .tdoc-selected-files {
     display: none;
 }
@@ -10612,7 +10861,6 @@ body {
     display: inline-block;
 }
 
-/* File Items */
 .tdoc-file-item {
     display: flex;
     justify-content: space-between;
@@ -10668,7 +10916,6 @@ body {
     transform: scale(1.1);
 }
 
-/* Upload Progress */
 .tdoc-upload-progress {
     position: fixed;
     bottom: 20px;
@@ -10698,7 +10945,6 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Animations */
 @keyframes slideInRight {
     from {
         transform: translateX(100%);
@@ -10727,7 +10973,6 @@ body {
    (Shared between CDoc and TDoc)
    ================================ */
 
-/* Modal Container */
 #tdocDocumentManagerModal .modal-content,
 #documentManagerModal .modal-content {
     width: 800px;
@@ -10736,7 +10981,6 @@ body {
     overflow-y: auto;
 }
 
-/* Modal Header */
 #tdocDocumentManagerModal h3,
 #documentManagerModal h3 {
     color: #ff0080;
@@ -10748,7 +10992,6 @@ body {
     gap: 10px;
 }
 
-/* Upload Section */
 .upload-section {
     margin-bottom: 30px;
     background: #f9f9f9;
@@ -10763,7 +11006,6 @@ body {
     font-weight: 600;
 }
 
-/* Drop Area */
 .drop-area {
     border: 2px dashed #ddd;
     border-radius: 12px;
@@ -10805,7 +11047,6 @@ body {
     font-size: 12px;
 }
 
-/* Browse Button */
 .btn-browse {
     background: #ff0080;
     color: white;
@@ -10824,7 +11065,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 0, 128, 0.3);
 }
 
-/* Selected Files List */
 .selected-files-list {
     max-height: 150px;
     overflow-y: auto;
@@ -10898,7 +11138,6 @@ body {
     transform: scale(1.1);
 }
 
-/* Upload Button */
 .upload-btn {
     padding: 8px 24px;
     background: #00cfff;
@@ -10926,7 +11165,6 @@ body {
     transform: translateY(0);
 }
 
-/* Documents Section */
 .documents-section {
     margin-top: 20px;
 }
@@ -10946,7 +11184,6 @@ body {
     font-weight: bold;
 }
 
-/* Documents List Container */
 .documents-list-container {
     max-height: 300px;
     overflow-y: auto;
@@ -10955,7 +11192,6 @@ body {
     background: white;
 }
 
-/* Document Table */
 .documents-table {
     width: 100%;
     border-collapse: collapse;
@@ -10984,7 +11220,6 @@ body {
     background: #fafafa;
 }
 
-/* File Info Cell */
 .file-info-cell {
     display: flex;
     align-items: center;
@@ -11000,7 +11235,6 @@ body {
     color: #333;
 }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -11036,7 +11270,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Empty State */
 .empty-state {
     padding: 40px;
     text-align: center;
@@ -11059,7 +11292,6 @@ body {
     color: #bbb;
 }
 
-/* Modal Footer */
 .modal-footer-doc {
     display: flex;
     justify-content: flex-end;
@@ -11084,7 +11316,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     #tdocDocumentManagerModal .modal-content,
     #documentManagerModal .modal-content {
@@ -11122,7 +11353,6 @@ body {
     }
 }
 
-/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -11141,7 +11371,6 @@ body {
    DOCUMENT MANAGER MODAL STYLES
    ================================ */
 
-/* Modal Container */
 #documentManagerModal .modal-content {
     width: 800px;
     max-width: 95%;
@@ -11149,7 +11378,6 @@ body {
     overflow-y: auto;
 }
 
-/* Modal Header */
 #documentManagerModal h3 {
     color: #ff0080;
     margin-bottom: 20px;
@@ -11160,7 +11388,6 @@ body {
     gap: 10px;
 }
 
-/* Upload Section */
 .upload-section {
     margin-bottom: 30px;
     background: #f9f9f9;
@@ -11175,7 +11402,6 @@ body {
     font-weight: 600;
 }
 
-/* Drop Area */
 .drop-area {
     border: 2px dashed #ddd;
     border-radius: 12px;
@@ -11217,7 +11443,6 @@ body {
     font-size: 12px;
 }
 
-/* Browse Button */
 .btn-browse {
     background: #ff0080;
     color: white;
@@ -11236,7 +11461,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 0, 128, 0.3);
 }
 
-/* Selected Files List */
 .selected-files-list {
     max-height: 150px;
     overflow-y: auto;
@@ -11308,8 +11532,6 @@ body {
     color: #c82333;
     transform: scale(1.1);
 }
-
-/* Upload Button */
 .upload-btn {
     padding: 8px 24px;
     background: #00cfff;
@@ -11337,7 +11559,6 @@ body {
     transform: translateY(0);
 }
 
-/* Documents Section */
 .documents-section {
     margin-top: 20px;
 }
@@ -11357,7 +11578,6 @@ body {
     font-weight: bold;
 }
 
-/* Documents List Container */
 .documents-list-container {
     max-height: 300px;
     overflow-y: auto;
@@ -11366,7 +11586,6 @@ body {
     background: white;
 }
 
-/* Document Table */
 .documents-table {
     width: 100%;
     border-collapse: collapse;
@@ -11395,7 +11614,6 @@ body {
     background: #fafafa;
 }
 
-/* File Info Cell */
 .file-info-cell {
     display: flex;
     align-items: center;
@@ -11411,7 +11629,6 @@ body {
     color: #333;
 }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -11470,7 +11687,6 @@ body {
     color: #bbb;
 }
 
-/* Modal Footer */
 .modal-footer-doc {
     display: flex;
     justify-content: flex-end;
@@ -11495,7 +11711,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     #documentManagerModal .modal-content {
         width: 95%;
@@ -11532,7 +11747,6 @@ body {
     }
 }
 
-/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -11550,20 +11764,116 @@ body {
 /* ================================
    EXTRA USER SELECTION MODAL STYLES
    ================================ */
-
-/* Modal Container */
 #extraUserSelectionModal {
     z-index: 10000;
 }
-
 #extraUserSelectionModal .modal-content {
     width: 400px;
     position: relative;
     z-index: 10001;
     max-width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #f5f7fb;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Close Button */
+#extraUserSelectionModal .modal-body {
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+    padding: 1rem;
+    background-color: transparent;
+    max-height: none !important;
+}
+
+#extraUserSelectionModal .modal-header,
+#extraUserSelectionModal .modal-footer {
+    overflow: visible;
+    background-color: #ffffff;
+}
+
+#extraUserSelectionModal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eef2f6;
+    padding: 1rem 1.25rem;
+}
+
+#extraUserSelectionModal .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: #ffffff;
+    border-top: 1px solid #eef2f6;
+    padding: 0.75rem 1.25rem;
+}
+
+#extraUserSelectionModal .modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#extraUserSelectionModal .modal-content::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+#extraUserSelectionModal .modal-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+#extraUserSelectionModal .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+#extraUserSelectionModal .modal-content {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #e9ecef;
+}
+
+#extraUserSelectionModal .form-group {
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #eef2f6;
+}
+
+#extraUserSelectionModal .form-select {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+#extraUserSelectionModal label {
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.875rem;
+}
+
+#extraUserSelectionModal .modal-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+#extraUserSelectionModal .modal-content * {
+    overflow-y: visible !important;
+}
+
+#extraUserSelectionModal select.form-select {
+    overflow: visible !important;
+}
 #extraUserSelectionModal .close {
     position: absolute;
     right: 15px;
@@ -11578,7 +11888,6 @@ body {
     color: #ff0080;
 }
 
-/* Modal Title */
 #extraUserSelectionModal h3 {
     color: #ff0080;
     margin-bottom: 15px;
@@ -11586,12 +11895,10 @@ body {
     font-weight: 600;
 }
 
-/* Modal Content Area */
 .modal-content-area {
     margin: 20px 0;
 }
 
-/* Task Info Box */
 .task-info-box {
     margin-bottom: 20px;
     padding: 12px;
@@ -11615,7 +11922,6 @@ body {
     word-break: break-word;
 }
 
-/* Current User Display */
 .current-user-section {
     margin-bottom: 20px;
 }
@@ -11647,7 +11953,6 @@ body {
     font-style: italic;
 }
 
-/* Search Input */
 .user-search-input-modal {
     position: relative;
     margin-bottom: 15px;
@@ -11672,7 +11977,6 @@ body {
     color: #bbb;
 }
 
-/* User List Container */
 .user-list-container-modal {
     max-height: 300px;
     overflow-y: auto;
@@ -11688,7 +11992,6 @@ body {
     font-size: 14px;
 }
 
-/* User Item */
 .user-item-modal {
     display: flex;
     align-items: center;
@@ -11723,7 +12026,6 @@ body {
     background: #ff0080;
 }
 
-/* User Badge */
 .user-badge-modal {
     width: 40px;
     height: 40px;
@@ -11742,7 +12044,6 @@ body {
     transform: scale(1.05);
 }
 
-/* User Info */
 .user-info-modal {
     flex: 1;
     min-width: 0;
@@ -11763,7 +12064,6 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Checkmark */
 .user-checkmark-modal {
     color: #ff0080;
     font-weight: bold;
@@ -11771,7 +12071,6 @@ body {
     flex-shrink: 0;
 }
 
-/* Modal Footer Buttons */
 .modal-footer-buttons {
     display: flex;
     justify-content: flex-end;
@@ -11815,7 +12114,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 0, 128, 0.3);
 }
 
-/* Success Animation */
 .success-flash {
     animation: successFlash 0.3s ease;
 }
@@ -11829,7 +12127,6 @@ body {
     }
 }
 
-/* Responsive */
 @media (max-width: 500px) {
     #extraUserSelectionModal .modal-content {
         width: 95%;
@@ -11867,7 +12164,6 @@ body {
    STATUS MODAL STYLES
    ================================ */
 
-/* Modal Container */
 .status-modal {
     z-index: 10000;
 }
@@ -11879,7 +12175,6 @@ body {
     overflow: hidden;
 }
 
-/* Modal Title */
 .status-modal-title {
     color: #ff0080;
     font-size: 20px;
@@ -11889,12 +12184,10 @@ body {
     border-bottom: 2px solid #f0f0f0;
 }
 
-/* Modal Body */
 .status-modal-body {
     margin: 20px 0;
 }
 
-/* Status Fields */
 .status-field {
     margin-bottom: 20px;
 }
@@ -11907,7 +12200,6 @@ body {
     font-size: 14px;
 }
 
-/* Current Status Display */
 .current-status-display {
     padding: 10px 12px;
     background: #f8f9fa;
@@ -11918,7 +12210,6 @@ body {
     font-size: 14px;
 }
 
-/* Status Select Dropdown */
 .status-select {
     width: 100%;
     padding: 10px 12px;
@@ -11940,7 +12231,6 @@ body {
     box-shadow: 0 0 0 3px rgba(255, 0, 128, 0.1);
 }
 
-/* Comment Textarea */
 .status-comment {
     width: 100%;
     padding: 10px 12px;
@@ -11962,7 +12252,6 @@ body {
     border-color: #f44336;
 }
 
-/* Character Counter */
 .status-comment-count {
     text-align: right;
     font-size: 12px;
@@ -11975,7 +12264,6 @@ body {
     color: #f44336;
 }
 
-/* Modal Buttons */
 .status-modal-buttons {
     display: flex;
     justify-content: flex-end;
@@ -12025,7 +12313,6 @@ body {
     transform: translateY(0);
 }
 
-/* Loading State */
 .btn-update-status.loading {
     background: #cc0066;
     cursor: not-allowed;
@@ -12046,7 +12333,6 @@ body {
     animation: spin 0.6s linear infinite;
 }
 
-/* Success State */
 .btn-update-status.success {
     background: #4caf50;
 }
@@ -12060,7 +12346,6 @@ body {
     animation: none;
 }
 
-/* Animations */
 @keyframes spin {
     to {
         transform: rotate(360deg);
@@ -12078,12 +12363,10 @@ body {
     }
 }
 
-/* Modal Animation */
 .status-modal .modal-content {
     animation: fadeIn 0.3s ease;
 }
 
-/* Close Button */
 .status-modal .close {
     position: absolute;
     right: 15px;
@@ -12099,7 +12382,6 @@ body {
     color: #ff0080;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
     .status-modal-content {
         width: 95%;
@@ -12131,7 +12413,6 @@ body {
    MAIN LIST TABLE STYLES
    ================================ */
 
-/* Container Styles */
 .main-table-container {
     background: white;
     border-radius: 8px;
@@ -12143,7 +12424,6 @@ body {
     margin-bottom: 40px;
 }
 
-/* List Heading (Outside) */
 .main-list-heading-outside {
     margin-bottom: 12px;
     padding: 8px 5px;
@@ -12165,7 +12445,6 @@ body {
     color: #333;
 }
 
-/* Main List Table Container */
 .main-list-table-container {
     background: white;
     border-radius: 8px;
@@ -12174,7 +12453,6 @@ body {
     border: 1px solid #e0e0e0;
 }
 
-/* Table Styles */
 .skystemtaskmaster-table {
     width: 100%;
     border-collapse: collapse;
@@ -12182,7 +12460,6 @@ body {
     overflow: visible !important;
 }
 
-/* Header Styles */
 .main-header-row th {
     padding: 12px 8px;
     text-align: left;
@@ -12198,12 +12475,10 @@ body {
     background-color: #f8f8f8;
 }
 
-/* Table Body */
 .main-list-tbody {
     overflow: visible !important;
 }
 
-/* Title Row (Inside) */
 .main-list-title-row {
     background-color: #f0f0f0 !important;
     border-top: 2px solid #ff0080;
@@ -12216,7 +12491,6 @@ body {
     padding: 0;
 }
 
-/* List Header Inside */
 .list-header-inside {
     display: flex;
     align-items: center;
@@ -12248,7 +12522,6 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Plus Dropdown */
 .plus-dropdown-wrapper {
     position: relative;
     display: inline-block;
@@ -12309,7 +12582,6 @@ body {
     width: 20px;
 }
 
-/* Collapse Icon */
 .collapse-icon-inside {
     font-size: 16px;
     cursor: pointer;
@@ -12321,12 +12593,10 @@ body {
     transform: scale(1.1);
 }
 
-/* Hover Effects */
 .main-list-title-row:hover {
     background-color: #e8e8e8 !important;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .main-list-heading-outside {
         flex-wrap: wrap;
@@ -12354,4 +12624,342 @@ body {
         font-size: 13px;
     }
 }
+.clickable-cell {
+    cursor: pointer;
+}
 
+.clickable-cell-hover {
+    background-color: #fff0f5;
+    border-radius: 4px;
+}
+.status-cell {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-cell:hover {
+    background-color: #fff0f5;
+    transform: scale(1.02);
+    font-weight: bold;
+}
+.extra-user-cell {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.extra-user-cell-hover {
+    background-color: #fff0f5;
+    transform: scale(1.02);
+}
+.editable-cell {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.editable-cell-hover {
+    background-color: #fff0f5;
+}
+.drop-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.drop-area.drag-over {
+    border-color: #ff0080;
+    background-color: #fff0f5;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+    color: #c82333;
+    transform: scale(1.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.upload-btn {
+    display: inline-block;
+    background-color: #ff0080;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+    background-color: #e60073;
+    transform: translateY(-1px);
+}
+
+.browse-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.browse-btn:hover {
+    background-color: #5a6268;
+}
+
+.selected-files-list {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.files-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.modal-body-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.preview-table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.preview-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.preview-table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.preview-table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.skystemtaskmaster-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 250px;
+    max-width: 400px;
+    border-left: 4px solid;
+}
+
+.skystemtaskmaster-notification.success {
+    background: #ff0080;
+    color: white;
+    border-left-color: #ff0080;
+}
+
+.skystemtaskmaster-notification.error {
+    background: #ff3366;
+    color: white;
+    border-left-color: #ff3366;
+}
+
+.skystemtaskmaster-notification.info {
+    background: #ff66cc;
+    color: white;
+    border-left-color: #ff66cc;
+}
+
+.skystemtaskmaster-notification::before {
+    content: "✨";
+    font-size: 18px;
+}
+
+.skystemtaskmaster-notification.success::before {
+    content: "✓";
+    font-weight: bold;
+}
+
+.skystemtaskmaster-notification.error::before {
+    content: "⚠";
+}
+
+.skystemtaskmaster-notification.info::before {
+    content: "ℹ";
+}
+
+.skystemtaskmaster-notification:hover {
+    transform: translateX(-5px);
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .skystemtaskmaster-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        min-width: auto;
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+}
+.tdoc-action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px 10px;
+    margin: 0 3px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tdoc-action-btn.btn-view i {
+    color: #333333;
+}
+
+.tdoc-action-btn.btn-view:hover {
+    background: rgba(51, 51, 51, 0.1);
+    transform: scale(1.1);
+}
+
+.tdoc-action-btn.btn-view:hover i {
+    color: #000000;
+}
+
+.tdoc-action-btn.btn-delete i {
+    color: #dc3545;
+}
+
+.tdoc-action-btn.btn-delete:hover {
+    background: rgba(220, 53, 69, 0.1);
+    transform: scale(1.1);
+}
+
+.tdoc-action-btn.btn-delete:hover i {
+    color: #ff0000;
+}
+
+.tdoc-action-btn:active {
+    transform: scale(0.95);
+}
+
+.tdoc-action-btn.btn-view i {
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.tdoc-action-btn.btn-view i {
+    color: #666666;
+}
+
+.tdoc-action-btn.btn-view:hover i {
+    color: #2c2c2c;
+}
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.tdoc-drop-area.drag-over {
+    border-color: #ff0080;
+    background: #ffe6f0;
+    transform: scale(1.02);
+}
+
+.tdoc-upload-btn.uploading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.tdoc-upload-btn.uploading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

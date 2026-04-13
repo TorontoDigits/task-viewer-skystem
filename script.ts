@@ -1444,7 +1444,7 @@ function makeCellClickable(cell: HTMLElement, type: string, item: Task | Subtask
     const newCell = cell.cloneNode(true) as HTMLElement;
     cell.parentNode?.replaceChild(newCell, cell);
     
-    newCell.style.cursor = 'pointer';
+    newCell.classList.add('clickable-cell');
     newCell.title = `Click to change ${type}`;
     
     newCell.addEventListener('click', (e) => {
@@ -1453,12 +1453,11 @@ function makeCellClickable(cell: HTMLElement, type: string, item: Task | Subtask
     });
     
     newCell.addEventListener('mouseenter', () => {
-        newCell.style.backgroundColor = '#fff0f5';
-        newCell.style.borderRadius = '4px';
+        newCell.classList.add('clickable-cell-hover');
     });
     
     newCell.addEventListener('mouseleave', () => {
-        newCell.style.backgroundColor = '';
+        newCell.classList.remove('clickable-cell-hover');
     });
 }
 
@@ -1472,70 +1471,64 @@ function showStatusChangeModal(task: Task): void {
     
     const currentStatus = task.statusBadge ? task.statusBadge.innerText : (task.status || 'Not Started');
     
-    const modalHtml = `
-        <div id="statusChangeModal" class="modal status-modal">
-            <div class="modal-content status-modal-content">
-                <span class="close">&times;</span>
-                <h3 class="status-modal-title">Change Status</h3>
-                
-                <div class="status-modal-body">
-                    <div class="status-field">
-                        <label class="status-label">Current Status</label>
-                        <div id="currentStatusDisplay" class="current-status-display" data-status="${escapeHtml(currentStatus)}">
-                            ${escapeHtml(currentStatus)}
-                        </div>
-                    </div>
-                    
-                    <div class="status-field">
-                        <label class="status-label">New Status</label>
-                        <select id="newStatusSelect" class="status-select">
-                            <option value="Not Started">Not Started</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Review">Review</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
-                            <option value="Hold">Hold</option>
-                            <option value="Overdue">Overdue</option>
-                        </select>
-                    </div>
-                    
-                    <div class="status-field">
-                        <label class="status-label">Comment (Optional)</label>
-                        <textarea id="statusComment" class="status-comment" rows="3" placeholder="Add comment..."></textarea>
-                        <div class="status-comment-count">0/500</div>
-                    </div>
-                </div>
-                
-                <div class="status-modal-buttons">
-                    <button id="cancelStatusBtn" class="btn-cancel-status">Cancel</button>
-                    <button id="updateStatusBtn" class="btn-update-status">Update Status</button>
-                </div>
-            </div>
-        </div>
-    `;
+    // Check if modal already exists
+    let modal = document.getElementById('statusChangeModal');
     
-    const existingModal = document.getElementById('statusChangeModal');
-    if (existingModal) {
-        existingModal.remove();
+    // If modal doesn't exist, clone it from template
+    if (!modal) {
+        const template = document.getElementById('statusModalTemplate');
+        if (template) {
+            modal = template.cloneNode(true) as HTMLElement;
+            modal.id = 'statusChangeModal';
+            modal.style.display = 'block';
+            document.body.appendChild(modal);
+        } else {
+            console.error('Modal template not found');
+            return;
+        }
+    } else {
+        modal.style.display = 'block';
     }
     
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = document.getElementById('statusChangeModal')!;
-    const select = document.getElementById('newStatusSelect') as HTMLSelectElement;
+    // Update current status display
+    const currentStatusDisplay = document.getElementById('currentStatusDisplay');
+    if (currentStatusDisplay) {
+        currentStatusDisplay.textContent = currentStatus;
+        currentStatusDisplay.setAttribute('data-status', currentStatus);
+    }
     
-    for (let i = 0; i < select.options.length; i++) {
-        if (select.options[i].value === currentStatus) {
-            select.selectedIndex = i;
-            break;
+    // Set current status in dropdown
+    const select = document.getElementById('newStatusSelect') as HTMLSelectElement;
+    if (select) {
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === currentStatus) {
+                select.selectedIndex = i;
+                break;
+            }
         }
     }
     
+    // Reset comment field and counter
     const commentTextarea = document.getElementById('statusComment') as HTMLTextAreaElement;
     const charCounter = modal.querySelector('.status-comment-count') as HTMLElement;
     
+    if (commentTextarea) {
+        commentTextarea.value = '';
+        if (charCounter) {
+            charCounter.textContent = '0/500';
+            charCounter.classList.remove('status-comment-count-exceed');
+            commentTextarea.classList.remove('status-comment-error');
+        }
+    }
+    
+    // Setup character counter
     if (commentTextarea && charCounter) {
-        commentTextarea.addEventListener('input', function() {
+        // Remove existing event listener to avoid duplicates
+        const newTextarea = commentTextarea.cloneNode(true);
+        commentTextarea.parentNode?.replaceChild(newTextarea, commentTextarea);
+        const freshTextarea = document.getElementById('statusComment') as HTMLTextAreaElement;
+        
+        freshTextarea.addEventListener('input', function() {
             const length = this.value.length;
             charCounter.textContent = `${length}/500`;
             if (length > 500) {
@@ -1549,63 +1542,74 @@ function showStatusChangeModal(task: Task): void {
     }
     
     const closeBtn = modal.querySelector('.close') as HTMLElement;
-    closeBtn.onclick = function() {
-        modal.remove();
-        currentTaskForStatus = null;
-    };
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            if (modal) modal.style.display = 'none';
+            currentTaskForStatus = null;
+        };
+    }
     
     const cancelBtn = document.getElementById('cancelStatusBtn') as HTMLElement;
-    cancelBtn.onclick = function() {
-        modal.remove();
-        currentTaskForStatus = null;
-    };
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            if (modal) modal.style.display = 'none';
+            currentTaskForStatus = null;
+        };
+    }
     
     const updateBtn = document.getElementById('updateStatusBtn') as HTMLElement;
-    updateBtn.onclick = function() {
-        const newStatus = (document.getElementById('newStatusSelect') as HTMLSelectElement).value;
-        const comment = (document.getElementById('statusComment') as HTMLTextAreaElement).value;
+    if (updateBtn) {
+        // Remove existing event listeners by cloning
+        const newUpdateBtn = updateBtn.cloneNode(true);
+        updateBtn.parentNode?.replaceChild(newUpdateBtn, updateBtn);
+        const freshUpdateBtn = document.getElementById('updateStatusBtn') as HTMLElement;
         
-        if (currentTaskForStatus) {
-            const task = currentTaskForStatus;
-            const oldStatus = task.statusBadge ? task.statusBadge.innerText : (task.status || 'Not Started');
+        freshUpdateBtn.onclick = function() {
+            const newStatus = (document.getElementById('newStatusSelect') as HTMLSelectElement).value;
+            const comment = (document.getElementById('statusComment') as HTMLTextAreaElement).value;
             
-            updateBtn.classList.add('loading');
-            (updateBtn as HTMLButtonElement).disabled = true;
-            
-            setTimeout(() => {
-                updateTaskStatusUniversal(task, newStatus);
+            if (currentTaskForStatus) {
+                const task = currentTaskForStatus;
+                const oldStatus = task.statusBadge ? task.statusBadge.innerText : (task.status || 'Not Started');
                 
-                if (comment && comment.trim()) {
-                    addStatusChangeComment(task.row, oldStatus, newStatus, comment);
-                }
-                
-                showNotification(`Status changed from ${oldStatus} to ${newStatus}`);
-                console.log('Status updated successfully');
-                
-                updateBtn.classList.remove('loading');
-                updateBtn.classList.add('success');
+                freshUpdateBtn.classList.add('loading');
+                (freshUpdateBtn as HTMLButtonElement).disabled = true;
                 
                 setTimeout(() => {
-                    updateBtn.classList.remove('success');
-                    modal.remove();
-                    currentTaskForStatus = null;
+                    updateTaskStatusUniversal(task, newStatus);
+                    
+                    if (comment && comment.trim()) {
+                        addStatusChangeComment(task.row, oldStatus, newStatus, comment);
+                    }
+                    
+                    showNotification(`Status changed from ${oldStatus} to ${newStatus}`);
+                    console.log('Status updated successfully');
+                    
+                    freshUpdateBtn.classList.remove('loading');
+                    freshUpdateBtn.classList.add('success');
+                    
+                    setTimeout(() => {
+                        freshUpdateBtn.classList.remove('success');
+                        if (modal) modal.style.display = 'none';
+                        currentTaskForStatus = null;
+                    }, 300);
                 }, 300);
-            }, 300);
-        } else {
-            modal.remove();
-            currentTaskForStatus = null;
-        }
-    };
+            } else {
+                if (modal) modal.style.display = 'none';
+                currentTaskForStatus = null;
+            }
+        };
+    }
     
     window.onclick = function(event) {
         if (event.target === modal) {
-            modal.remove();
+            if (modal) modal.style.display = 'none';
             currentTaskForStatus = null;
         }
     };
     
     setTimeout(() => {
-        select.focus();
+        if (select) select.focus();
     }, 100);
 }
 
@@ -1735,21 +1739,8 @@ function makeStatusCellClickable(cell: HTMLElement, item: Task | Subtask): HTMLE
         cell.parentNode.replaceChild(newCell, cell);
     }
     
-    newCell.style.cursor = 'pointer';
-    newCell.style.transition = 'all 0.2s';
+    newCell.classList.add('status-cell');
     newCell.title = 'Click to change status';
-    
-    newCell.addEventListener('mouseenter', () => {
-        newCell.style.backgroundColor = '#fff0f5';
-        newCell.style.transform = 'scale(1.02)';
-        newCell.style.fontWeight = 'bold';
-    });
-    
-    newCell.addEventListener('mouseleave', () => {
-        newCell.style.backgroundColor = '';
-        newCell.style.transform = 'scale(1)';
-        newCell.style.fontWeight = '';
-    });
     
     newCell.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1783,72 +1774,69 @@ function showSubtaskStatusChangeModal(subtask: Subtask): void {
     addStatusModalStyles();
     
     currentSubtaskForStatus = subtask;
-    
-    const modalHtml = `
-        <div id="statusChangeModal" class="modal status-modal">
-            <div class="modal-content status-modal-content">
-                <span class="close">&times;</span>
-                <h3 class="status-modal-title">Change Subtask Status</h3>
-                
-                <div class="status-modal-body">
-                    <div class="status-field">
-                        <label class="status-label">Current Status</label>
-                        <div id="currentStatusDisplay" class="current-status-display" data-status="${escapeHtml(subtask.statusBadge?.innerText || 'Not Started')}">
-                            ${escapeHtml(subtask.statusBadge?.innerText || 'Not Started')}
-                        </div>
-                    </div>
-                    
-                    <div class="status-field">
-                        <label class="status-label">New Status</label>
-                        <select id="newStatusSelect" class="status-select">
-                            <option value="Not Started">Not Started</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Review">Review</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
-                            <option value="Hold">Hold</option>
-                            <option value="Overdue">Overdue</option>
-                        </select>
-                    </div>
-                    
-                    <div class="status-field">
-                        <label class="status-label">Comment (Optional)</label>
-                        <textarea id="statusComment" class="status-comment" rows="3" placeholder="Add comment..."></textarea>
-                        <div class="status-comment-count">0/500</div>
-                    </div>
-                </div>
-                
-                <div class="status-modal-buttons">
-                    <button id="cancelStatusBtn" class="btn-cancel-status">Cancel</button>
-                    <button id="updateStatusBtn" class="btn-update-status">Update Status</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    const existingModal = document.getElementById('statusChangeModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = document.getElementById('statusChangeModal')!;
-    const select = document.getElementById('newStatusSelect') as HTMLSelectElement;
     const currentStatus = subtask.statusBadge?.innerText || 'Not Started';
     
-    for (let i = 0; i < select.options.length; i++) {
-        if (select.options[i].value === currentStatus) {
-            select.selectedIndex = i;
-            break;
+    // Check if modal already exists
+    let modal = document.getElementById('statusChangeModal');
+    
+    // If modal doesn't exist, clone it from template
+    if (!modal) {
+        const template = document.getElementById('statusModalTemplate');
+        if (template) {
+            modal = template.cloneNode(true) as HTMLElement;
+            modal.id = 'statusChangeModal';
+            document.body.appendChild(modal);
+        } else {
+            console.error('Modal template not found');
+            return;
         }
     }
     
+    // Update modal title for subtask
+    const modalTitle = modal.querySelector('.status-modal-title');
+    if (modalTitle) {
+        modalTitle.textContent = 'Change Subtask Status';
+    }
+    
+    // Update current status display
+    const currentStatusDisplay = document.getElementById('currentStatusDisplay');
+    if (currentStatusDisplay) {
+        currentStatusDisplay.textContent = currentStatus;
+        currentStatusDisplay.setAttribute('data-status', currentStatus);
+    }
+    
+    // Set current status in dropdown
+    const select = document.getElementById('newStatusSelect') as HTMLSelectElement;
+    if (select) {
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === currentStatus) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    // Reset comment field and counter
     const commentTextarea = document.getElementById('statusComment') as HTMLTextAreaElement;
     const charCounter = modal.querySelector('.status-comment-count') as HTMLElement;
     
+    if (commentTextarea) {
+        commentTextarea.value = '';
+        if (charCounter) {
+            charCounter.textContent = '0/500';
+            charCounter.classList.remove('exceed');
+            commentTextarea.classList.remove('error');
+        }
+    }
+    
+    // Setup character counter
     if (commentTextarea && charCounter) {
-        commentTextarea.addEventListener('input', function() {
+        // Remove existing event listener to avoid duplicates
+        const newTextarea = commentTextarea.cloneNode(true);
+        commentTextarea.parentNode?.replaceChild(newTextarea, commentTextarea);
+        const freshTextarea = document.getElementById('statusComment') as HTMLTextAreaElement;
+        
+        freshTextarea.addEventListener('input', function() {
             const length = this.value.length;
             charCounter.textContent = `${length}/500`;
             if (length > 500) {
@@ -1862,68 +1850,89 @@ function showSubtaskStatusChangeModal(subtask: Subtask): void {
     }
     
     const closeModal = () => {
-        modal.remove();
+        if (modal) modal.remove();
         currentSubtaskForStatus = null;
     };
     
+    // Setup close button
     const closeBtn = modal.querySelector('.close') as HTMLElement;
-    closeBtn.onclick = closeModal;
+    if (closeBtn) {
+        closeBtn.onclick = closeModal;
+    }
     
+    // Setup cancel button
     const cancelBtn = document.getElementById('cancelStatusBtn') as HTMLElement;
-    cancelBtn.onclick = closeModal;
+    if (cancelBtn) {
+        // Remove existing event listeners by cloning
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode?.replaceChild(newCancelBtn, cancelBtn);
+        const freshCancelBtn = document.getElementById('cancelStatusBtn') as HTMLElement;
+        freshCancelBtn.onclick = closeModal;
+    }
     
+    // Setup update button
     const updateBtn = document.getElementById('updateStatusBtn') as HTMLElement;
-    updateBtn.onclick = function() {
-        console.log('Update subtask button clicked!');
+    if (updateBtn) {
+        // Remove existing event listeners by cloning
+        const newUpdateBtn = updateBtn.cloneNode(true);
+        updateBtn.parentNode?.replaceChild(newUpdateBtn, updateBtn);
+        const freshUpdateBtn = document.getElementById('updateStatusBtn') as HTMLElement;
         
-        const newStatus = (document.getElementById('newStatusSelect') as HTMLSelectElement).value;
-        const comment = (document.getElementById('statusComment') as HTMLTextAreaElement).value;
-        
-        if (currentSubtaskForStatus) {
-            const subtask = currentSubtaskForStatus;
-            const oldStatus = subtask.statusBadge?.innerText || 'Not Started';
+        freshUpdateBtn.onclick = function() {
+            console.log('Update subtask button clicked!');
             
-            updateBtn.classList.add('loading');
-            (updateBtn as HTMLButtonElement).disabled = true;
+            const newStatus = (document.getElementById('newStatusSelect') as HTMLSelectElement).value;
+            const comment = (document.getElementById('statusComment') as HTMLTextAreaElement).value;
             
-            setTimeout(() => {
-                if (subtask.statusBadge) {
-                    subtask.statusBadge.innerText = newStatus;
-                    subtask.statusBadge.className = `skystemtaskmaster-status-badge skystemtaskmaster-status-${newStatus.toLowerCase().replace(' ', '-')}`;
-                }
+            if (currentSubtaskForStatus) {
+                const subtask = currentSubtaskForStatus;
+                const oldStatus = subtask.statusBadge?.innerText || 'Not Started';
                 
-                if (subtask.taskStatus !== undefined) {
-                    subtask.taskStatus = newStatus;
-                }
-                
-                updateTaskStatusExtraColumn(subtask.row, newStatus);
-                updateCounts();
-                showNotification(`Subtask status changed from ${oldStatus} to ${newStatus}`);
-                
-                updateBtn.classList.remove('loading');
-                updateBtn.classList.add('success');
+                freshUpdateBtn.classList.add('loading');
+                (freshUpdateBtn as HTMLButtonElement).disabled = true;
                 
                 setTimeout(() => {
-                    updateBtn.classList.remove('success');
-                    closeModal();
+                    if (subtask.statusBadge) {
+                        subtask.statusBadge.innerText = newStatus;
+                        subtask.statusBadge.className = `skystemtaskmaster-status-badge skystemtaskmaster-status-${newStatus.toLowerCase().replace(' ', '-')}`;
+                    }
+                    
+                    if (subtask.taskStatus !== undefined) {
+                        subtask.taskStatus = newStatus;
+                    }
+                    
+                    updateTaskStatusExtraColumn(subtask.row, newStatus);
+                    updateCounts();
+                    showNotification(`Subtask status changed from ${oldStatus} to ${newStatus}`);
+                    
+                    freshUpdateBtn.classList.remove('loading');
+                    freshUpdateBtn.classList.add('success');
+                    
+                    setTimeout(() => {
+                        freshUpdateBtn.classList.remove('success');
+                        closeModal();
+                    }, 300);
                 }, 300);
-            }, 300);
-        } else {
-            closeModal();
-        }
-    };
+            } else {
+                closeModal();
+            }
+        };
+    }
     
+    // Setup window click handler
     window.onclick = function(event) {
         if (event.target === modal) {
             closeModal();
         }
     };
     
+    // Show modal
+    modal.style.display = 'block';
+    
     setTimeout(() => {
-        select.focus();
+        if (select) select.focus();
     }, 100);
 }
-
 function updateTaskStatusExtraColumn(row: HTMLTableRowElement | null, newStatus: string): void {
     if (!row) return;
     
@@ -2061,8 +2070,7 @@ function addExtraColumnsForRow(row: HTMLTableRowElement, task: Task): void {
     const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
     
     columnConfig.forEach(col => {
-        // First fix: use indexOf instead of includes
-        // Second fix: remove "!== false" comparison
+      
         if (baseColumns.indexOf(col.key) === -1 && col.visible) {
             const cell = document.createElement('td');
             cell.className = 'extra-cell';
@@ -2209,27 +2217,24 @@ function makeExtraCellsEditable(row: HTMLTableRowElement, task: Task): void {
 }
 
 function makeExtraUserCellClickable(cell: HTMLElement, item: Task | Subtask, columnKey: string): HTMLElement {
-    cell.style.cursor = 'pointer';
-    cell.style.transition = 'all 0.2s';
-    
     let titleText = 'Click to change ';
     if (columnKey === 'taskOwner') titleText += 'Task Owner';
     else if (columnKey === 'createdBy') titleText += 'Created By';
     else if (columnKey === 'approver') titleText += 'Approver';
-    cell.title = titleText;
-    
-    cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
-        cell.style.transform = 'scale(1.02)';
-    });
-    
-    cell.addEventListener('mouseleave', () => {
-        cell.style.backgroundColor = '';
-        cell.style.transform = 'scale(1)';
-    });
     
     const newCell = cell.cloneNode(true) as HTMLElement;
     cell.parentNode?.replaceChild(newCell, cell);
+    
+    newCell.classList.add('extra-user-cell');
+    newCell.title = titleText;
+    
+    newCell.addEventListener('mouseenter', () => {
+        newCell.classList.add('extra-user-cell-hover');
+    });
+    
+    newCell.addEventListener('mouseleave', () => {
+        newCell.classList.remove('extra-user-cell-hover');
+    });
     
     newCell.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -2238,7 +2243,7 @@ function makeExtraUserCellClickable(cell: HTMLElement, item: Task | Subtask, col
         console.log(`${columnKey} cell clicked!`);
         
         if (item && item.row) {
-            const currentValue = newCell.textContent.trim();
+            const currentValue = newCell.textContent?.trim() || '';
             
             let columnDisplayName = '';
             if (columnKey === 'taskOwner') columnDisplayName = 'Owner';
@@ -2471,16 +2476,15 @@ function clearExtraUserReferences(): void {
 }
 
 function makeGenericCellEditable(cell: HTMLElement, task: Task, columnKey: string): void {
-    cell.style.cursor = 'pointer';
-    cell.style.transition = 'all 0.2s';
+    cell.classList.add('editable-cell');
     cell.title = `Click to edit ${columnKey}`;
     
     cell.addEventListener('mouseenter', () => {
-        cell.style.backgroundColor = '#fff0f5';
+        cell.classList.add('editable-cell-hover');
     });
     
     cell.addEventListener('mouseleave', () => {
-        cell.style.backgroundColor = '';
+        cell.classList.remove('editable-cell-hover');
     });
     
     cell.addEventListener('click', (e) => {
@@ -2498,7 +2502,6 @@ function makeGenericCellEditable(cell: HTMLElement, task: Task, columnKey: strin
         }
     });
 }
-
 // ================================
 // RECURRENCE FUNCTIONS
 // ================================
@@ -2534,58 +2537,37 @@ function showRecurrenceTypeModal(task: Task, cell: HTMLElement, currentValue: st
         existingModal.remove();
     }
     
-    const modal = document.createElement('div');
+    const template = document.getElementById('recurrenceModalTemplate');
+    if (!template) {
+        console.error('Recurrence modal template not found');
+        return;
+    }
+    
+    const modal = template.cloneNode(true) as HTMLElement;
     modal.id = 'recurrenceTypeModal';
-    modal.className = 'modal';
     modal.style.display = 'block';
-    
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>Set Recurrence Type</h3>
-            
-            <div class="task-info">
-                <div class="task-info-label">Task:</div>
-                <div class="task-info-name">${escapeHtml(task.name || (task.taskNameCell?.querySelector('span')?.textContent || 'Task'))}</div>
-            </div>
-            
-            <div class="current-recurrence-section">
-                <label class="current-recurrence-label">Current Recurrence</label>
-                <div class="current-recurrence-value ${currentValue !== 'None' ? 'recurring' : 'non-recurring'}">
-                    ${escapeHtml(currentValue || 'None')}
-                </div>
-            </div>
-            
-            <div class="recurrence-select-section">
-                <label class="recurrence-select-label">Select Recurrence Type</label>
-                <select id="recurrenceTypeSelect">
-                    <optgroup label="Recurring Tasks">
-                        <option value="Every Period" ${currentValue === 'Every Period' ? 'selected' : ''}>Every Period</option>
-                        <option value="Quarterly" ${currentValue === 'Quarterly' ? 'selected' : ''}>Quarterly</option>
-                        <option value="Annual" ${currentValue === 'Annual' ? 'selected' : ''}>Annual</option>
-                    </optgroup>
-                    <optgroup label="Non-Recurring Tasks">
-                        <option value="Multiple" ${currentValue === 'Multiple' ? 'selected' : ''}>Multiple</option>
-                        <option value="Custom" ${currentValue === 'Custom' ? 'selected' : ''}>Custom</option>
-                        <option value="None" ${currentValue === 'None' ? 'selected' : ''}>None</option>
-                    </optgroup>
-                </select>
-            </div>
-            
-            <div class="note-section">
-                <strong>Note:</strong> Recurrence type determines the task's border color:<br>
-                <span class="color-indicator gray"></span> Gray = Recurring (Every Period, Quarterly, Annual)<br>
-                <span class="color-indicator blue"></span> Blue = Non-recurring (None, Multiple, Custom)
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn-cancel">Cancel</button>
-                <button class="btn-save">Save</button>
-            </div>
-        </div>
-    `;
-    
     document.body.appendChild(modal);
+    
+    const taskNameElement = modal.querySelector('#recurrenceTaskName');
+    if (taskNameElement) {
+        taskNameElement.textContent = escapeHtml(task.name || (task.taskNameCell?.querySelector('span')?.textContent || 'Task'));
+    }
+    
+    const currentRecurrenceElement = modal.querySelector('#currentRecurrenceValue');
+    if (currentRecurrenceElement) {
+        currentRecurrenceElement.textContent = escapeHtml(currentValue || 'None');
+        currentRecurrenceElement.className = `current-recurrence-value ${currentValue !== 'None' ? 'recurring' : 'non-recurring'}`;
+    }
+    
+    const select = modal.querySelector('#recurrenceTypeSelect') as HTMLSelectElement;
+    if (select && currentValue) {
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === currentValue) {
+                select.selectedIndex = i;
+                break;
+            }
+        }
+    }
     
     (window as any).currentRecurrenceTask = task;
     (window as any).currentRecurrenceCell = cell;
@@ -2593,49 +2575,49 @@ function showRecurrenceTypeModal(task: Task, cell: HTMLElement, currentValue: st
     const closeBtn = modal.querySelector('.close') as HTMLElement;
     const cancelBtn = modal.querySelector('.btn-cancel') as HTMLElement;
     const saveBtn = modal.querySelector('.btn-save') as HTMLElement;
-    const select = document.getElementById('recurrenceTypeSelect') as HTMLSelectElement;
     
     const closeModal = () => {
         modal.remove();
+        (window as any).currentRecurrenceTask = null;
+        (window as any).currentRecurrenceCell = null;
     };
     
-   const saveRecurrenceType = () => {
-    const newValue = select.value;
-    console.log('Saving new recurrence value:', newValue);
-    
-    if ((window as any).currentRecurrenceCell) {
-        (window as any).currentRecurrenceCell.textContent = newValue;
+    const saveRecurrenceType = () => {
+        const newValue = select.value;
+        console.log('Saving new recurrence value:', newValue);
         
-        if ((window as any).currentRecurrenceTask) {
-            const task = (window as any).currentRecurrenceTask;
-            task.recurrenceType = newValue;
+        if ((window as any).currentRecurrenceCell) {
+            (window as any).currentRecurrenceCell.textContent = newValue;
             
-            const row = task.row;
-            if (row) {
-                const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
-                row.classList.remove('recurring-task', 'non-recurring-task');
+            if ((window as any).currentRecurrenceTask) {
+                const task = (window as any).currentRecurrenceTask;
+                task.recurrenceType = newValue;
                 
-                // Fix: Replace includes() with indexOf()
-                if (recurringOptions.indexOf(newValue) !== -1) {
-                    row.classList.add('recurring-task');
-                } else {
-                    row.classList.add('non-recurring-task');
+                const row = task.row;
+                if (row) {
+                    const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
+                    row.classList.remove('recurring-task', 'non-recurring-task');
+                    
+                    if (recurringOptions.indexOf(newValue) !== -1) {
+                        row.classList.add('recurring-task');
+                    } else {
+                        row.classList.add('non-recurring-task');
+                    }
+                    
+                    row.setAttribute('data-recurrence-type', newValue);
                 }
-                
-                row.setAttribute('data-recurrence-type', newValue);
             }
+            
+            setTimeout(() => saveAllData(), 100);
+            showNotification(`Recurrence type set to: ${newValue}`);
         }
         
-        setTimeout(() => saveAllData(), 100);
-        showNotification(`Recurrence type set to: ${newValue}`);
-    }
+        closeModal();
+    };
     
-    closeModal();
-};
-    
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-    saveBtn.addEventListener('click', saveRecurrenceType);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    if (saveBtn) saveBtn.addEventListener('click', saveRecurrenceType);
     
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -2654,7 +2636,6 @@ function updateRecurrenceClasses(): void {
         if (task.row) {
             const recurrenceType = task.recurrenceType || 'None';
             const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
-            // Fix: Replace includes() with indexOf()
             const isRecurring = recurringOptions.indexOf(recurrenceType) !== -1;
             task.row.classList.remove('recurring-task', 'non-recurring-task');
             if (isRecurring) {
@@ -2813,7 +2794,6 @@ function createCommentPanel(): HTMLElement {
             const comments = taskComments[commentKey] || [];
             const now = new Date();
             
-            // Fix: Replace substr() with substring()
              const newComment: TaskComment = {
                 id: 'c' + Date.now() + '_' + Math.random().toString(36).substring(2, 11),
                 author: 'PK',
@@ -3388,20 +3368,17 @@ function setupUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): 
     
     dropArea.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ff0080';
-        dropArea.style.backgroundColor = '#fff0f5';
+        dropArea.classList.add('drag-over');
     });
     
     dropArea.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ddd';
-        dropArea.style.backgroundColor = 'transparent';
+        dropArea.classList.remove('drag-over');
     });
     
     dropArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropArea.style.borderColor = '#ddd';
-        dropArea.style.backgroundColor = 'transparent';
+        dropArea.classList.remove('drag-over');
         const files = Array.from(e.dataTransfer?.files || []);
         selectedFiles = [...selectedFiles, ...files];
         updateSelectedFilesList();
@@ -3409,22 +3386,22 @@ function setupUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): 
     
     function updateSelectedFilesList(): void {
         if (selectedFiles.length === 0) {
-            selectedFilesList.style.display = 'none';
-            uploadBtn.style.display = 'none';
+            selectedFilesList.classList.add('hidden');
+            uploadBtn.classList.add('hidden');
             return;
         }
         
-        selectedFilesList.style.display = 'block';
-        uploadBtn.style.display = 'inline-block';
+        selectedFilesList.classList.remove('hidden');
+        uploadBtn.classList.remove('hidden');
         
         filesContainer.innerHTML = selectedFiles.map((file, index) => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px; border-bottom: 1px solid #eee;">
+            <div class="file-item" data-file-index="${index}">
                 <span>📄 ${escapeHtml(file.name)} (${(file.size / 1024).toFixed(1)} KB)</span>
-                <button class="remove-file" data-index="${index}" style="background:none; border:none; color:#dc3545; cursor:pointer;">✕</button>
+                <button class="remove-file-btn" data-index="${index}">✕</button>
             </div>
         `).join('');
         
-        filesContainer.querySelectorAll('.remove-file').forEach(btn => {
+        filesContainer.querySelectorAll('.remove-file-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
                 selectedFiles.splice(index, 1);
@@ -3463,13 +3440,14 @@ function setupUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): 
                 if (subtask) subtask.id = newId;
             }
         }
-           const docs: TaskDocument[] = selectedFiles.map(file => ({
-                id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                uploadDate: new Date()
-            }));
+        
+        const docs: TaskDocument[] = selectedFiles.map(file => ({
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadDate: new Date()
+        }));
         
         console.log('Uploading CDoc documents:', docs.length, 'to row:', currentTaskRow, 'ID:', taskId);
         const existingDocs = taskDocuments.get(currentTaskRow) || [];
@@ -3540,10 +3518,10 @@ function renderDocumentsList(docs: TaskDocument[], taskRow: HTMLTableRowElement)
                             <td style="text-align: center;">
                                 <button class="view-doc-btn tdoc-action-btn btn-view" 
                                         data-index="${index}" 
-                                        title="View File">👁️</button>
+                                        title="View File"><i class="fas fa-eye"></i></button>
                                 <button class="delete-doc-btn tdoc-action-btn btn-delete" 
                                         data-index="${index}" 
-                                        title="Delete File">🗑</button>
+                                        title="Delete File"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     `;
@@ -3626,80 +3604,150 @@ function addTDocModalStyles(): void {
 }
 
 function showTDocDocumentManager(taskRow: HTMLTableRowElement): void {
-    // Ensure styles are loaded
-    addTDocModalStyles();
+    let existingModal = document.getElementById('tdocDocumentManagerModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
     
-    const docs = taskTDocDocuments.get(taskRow) || [];
-    let modal = document.getElementById('tdocDocumentManagerModal');
+    // Create modal dynamically
+    const modal = document.createElement('div');
+    modal.id = 'tdocDocumentManagerModal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
     
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'tdocDocumentManagerModal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h3>📄 TDoc Document Manager</h3>
+    modal.innerHTML = `
+        <div class="modal-content tdoc-modal-content">
+            <span class="close">&times;</span>
+            <h3 class="cdoc-header">
+                <i class="fas fa-file-alt"></i> TDoc Document Manager
+            </h3>
+            
+            <div class="upload-section">
+                <h4><i class="fas fa-cloud-upload-alt"></i> Upload New Documents</h4>
                 
-                <div class="upload-section">
-                    <h4>Upload New Documents</h4>
-                    
-                    <div id="tdocDropArea" class="drop-area">
-                        <div class="drop-area-icon"><i class="fa-solid fa-folder-open"></i></div>
-                        <div class="drop-area-text">Drag files here or</div>
-                        <button id="tdocBrowseFileBtn" class="btn-browse">Browse</button>
-                        <input type="file" id="tdocFileInput" style="display: none;" multiple>
-                    </div>
-                    
-                    <div id="tdocSelectedFilesList" class="selected-files-list">
-                        <div class="selected-files-header">Selected Files:</div>
-                        <div id="tdocFilesContainer" class="files-container"></div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button id="tdocUploadSelectedBtn" class="upload-btn">Upload Files</button>
-                    </div>
+                <div class="tdoc-drop-area" id="tdocDropArea">
+                    <div class="drop-area-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="drop-area-text">Drag & Drop files here or</div>
+                    <button type="button" id="tdocBrowseFileBtn" class="btn-browse-tdoc">Browse Files</button>
+                    <input type="file" id="tdocFileInput" style="display: none;" multiple>
                 </div>
                 
-                <div class="documents-section">
-                    <h4>Attached Documents (<span id="tdocDocCount" class="doc-count">${docs.length}</span>)</h4>
-                    <div id="tdocDocumentsListContainer" class="documents-list-container"></div>
+                <div id="tdocSelectedFilesList" class="tdoc-selected-files" style="display: none;">
+                    <div class="selected-files-header">Selected Files:</div>
+                    <div id="tdocFilesContainer" class="tdoc-files-container"></div>
                 </div>
                 
-                <div class="modal-footer-doc">
-                    <button id="tdocCloseManagerBtn" class="btn-close-doc">Close</button>
+                <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" id="tdocUploadSelectedBtn" class="tdoc-upload-btn" style="display: none;">
+                        <i class="fas fa-upload"></i> Upload Files
+                    </button>
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
-        
-        const closeBtn = modal.querySelector('.close') as HTMLElement;
-        closeBtn.addEventListener('click', () => {
-            if (modal) modal.style.display = 'none';
-        });
-        
-        const closeManagerBtn = document.getElementById('tdocCloseManagerBtn') as HTMLElement;
-        closeManagerBtn.addEventListener('click', () => {
-            if (modal) modal.style.display = 'none';
-        });
-    }
+            
+            <div class="documents-section">
+                <h4><i class="fas fa-folder-open"></i> Attached Documents (<span id="tdocDocCount">0</span>)</h4>
+                <div id="tdocDocumentsListContainer" class="documents-list-container"></div>
+            </div>
+            
+            <div class="modal-footer-doc">
+                <button type="button" id="tdocCloseManagerBtn" class="btn-close-doc">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    `;
     
-    modal.setAttribute('data-current-task-row', taskRow.id || Math.random().toString(36));
+    document.body.appendChild(modal);
+    
     (window as any).currentTDocTaskRow = taskRow;
     
-    const listContainer = document.getElementById('tdocDocumentsListContainer');
+    const docs = taskTDocDocuments.get(taskRow) || [];
+    const listContainer = modal.querySelector('#tdocDocumentsListContainer');
     if (listContainer) {
         listContainer.innerHTML = renderTDocDocumentsList(docs, taskRow);
-        attachTDocDocumentEventListeners(taskRow);
     }
     
-    const countSpan = document.getElementById('tdocDocCount');
-    if (countSpan) countSpan.textContent = docs.length.toString();
+    const countSpan = modal.querySelector('#tdocDocCount');
+    if (countSpan) {
+        countSpan.textContent = docs.length.toString();
+    }
+    
+    const closeModal = () => {
+        modal.style.animation = 'fadeOut 0.2s ease';
+        setTimeout(() => {
+            modal.remove();
+            (window as any).currentTDocTaskRow = null;
+        }, 200);
+    };
+    
+    const closeBtn = modal.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    const closeManagerBtn = modal.querySelector('#tdocCloseManagerBtn');
+    if (closeManagerBtn) {
+        closeManagerBtn.addEventListener('click', closeModal);
+    }
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
     
     setupTDocUploadHandlers(modal, taskRow);
-    modal.style.display = 'block';
+    
+    attachTDocDocumentEventListenersForModal(modal, taskRow);
 }
 
+function attachTDocDocumentEventListenersForModal(modal: HTMLElement, taskRow: HTMLTableRowElement): void {
+    const viewButtons = modal.querySelectorAll('.tdoc-view-doc-btn');
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt((e.currentTarget as HTMLElement).getAttribute('data-index') || '0');
+            const docs = taskTDocDocuments.get(taskRow) || [];
+            if (docs[index]) {
+                previewDocument(docs[index]);
+            }
+        });
+    });
+    
+    const deleteButtons = modal.querySelectorAll('.tdoc-delete-doc-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt((e.currentTarget as HTMLElement).getAttribute('data-index') || '0');
+            if (confirm('Are you sure you want to delete this document?')) {
+                const docs = taskTDocDocuments.get(taskRow) || [];
+                if (docs[index]) {
+                    docs.splice(index, 1);
+                    if (docs.length === 0) {
+                        taskTDocDocuments.delete(taskRow);
+                    } else {
+                        taskTDocDocuments.set(taskRow, docs);
+                    }
+                    updateTDocColumn();
+                    
+                    const listContainer = modal.querySelector('#tdocDocumentsListContainer');
+                    if (listContainer) {
+                        listContainer.innerHTML = renderTDocDocumentsList(docs, taskRow);
+                        attachTDocDocumentEventListenersForModal(modal, taskRow);
+                    }
+                    
+                    const countSpan = modal.querySelector('#tdocDocCount');
+                    if (countSpan) {
+                        countSpan.textContent = docs.length.toString();
+                    }
+                    
+                    showNotification('Document deleted successfully');
+                    setTimeout(() => saveAllData(), 100);
+                }
+            }
+        });
+    });
+}
 function renderTDocDocumentsList(docs: TaskDocument[], taskRow: HTMLTableRowElement): string{
     if (docs.length === 0) {
         return `
@@ -3743,9 +3791,9 @@ function renderTDocDocumentsList(docs: TaskDocument[], taskRow: HTMLTableRowElem
                             </td>
                             <td style="text-align: center;">
                                 <button class="tdoc-action-btn tdoc-view-btn tdoc-view-doc-btn" 
-                                        data-index="${index}" title="View">👁️</button>
+                                        data-index="${index}" title="View"><i class="fas fa-eye" style="color: #ff0080;"></i></button>
                                 <button class="tdoc-action-btn tdoc-delete-btn tdoc-delete-doc-btn" 
-                                        data-index="${index}" title="Delete">🗑</button>
+                                        data-index="${index}" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     `;
@@ -3825,49 +3873,43 @@ function addTDocUploadStyles(): void {
 }
 
 function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElement): void {
-    // Ensure styles are loaded
-    addTDocUploadStyles();
+    const dropArea = modal.querySelector('.tdoc-drop-area') as HTMLElement;
+    const fileInput = modal.querySelector('#tdocFileInput') as HTMLInputElement;
+    const filesContainer = modal.querySelector('#tdocFilesContainer') as HTMLElement;
+    const selectedFilesList = modal.querySelector('#tdocSelectedFilesList') as HTMLElement;
+    const uploadBtn = modal.querySelector('#tdocUploadSelectedBtn') as HTMLElement;
+    const browseBtn = modal.querySelector('#tdocBrowseFileBtn') as HTMLElement;
     
-    const dropArea = document.getElementById('tdocDropArea') as HTMLElement;
-    const fileInput = document.getElementById('tdocFileInput') as HTMLInputElement;
-    const filesContainer = document.getElementById('tdocFilesContainer') as HTMLElement;
-    const selectedFilesList = document.getElementById('tdocSelectedFilesList') as HTMLElement;
-    const uploadBtn = document.getElementById('tdocUploadSelectedBtn') as HTMLElement;
-    const browseBtn = document.getElementById('tdocBrowseFileBtn') as HTMLElement;
-    
-    if (!dropArea || !fileInput || !filesContainer || !selectedFilesList || !uploadBtn || !browseBtn) return;
+    if (!dropArea || !fileInput || !filesContainer || !selectedFilesList || !uploadBtn || !browseBtn) {
+        console.error('TDoc upload elements not found');
+        return;
+    }
     
     let selectedFiles: File[] = [];
     
-    // Add CSS classes
-    dropArea.classList.add('tdoc-drop-area');
-    selectedFilesList.classList.add('tdoc-selected-files');
-    uploadBtn.classList.add('tdoc-upload-btn');
+    browseBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
     
-    browseBtn.addEventListener('click', () => fileInput.click());
-    
-    fileInput.addEventListener('change', (e) => {
-        const files = Array.from((e.target as HTMLInputElement).files || []);
+    fileInput.addEventListener('change', () => {
+        const files = Array.from(fileInput.files || []);
         selectedFiles = [...selectedFiles, ...files];
         updateSelectedFilesList();
+        fileInput.value = '';
     });
     
     dropArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropArea.classList.add('drag-over');
-        dropArea.classList.remove('normal');
     });
     
-    dropArea.addEventListener('dragleave', (e) => {
-        e.preventDefault();
+    dropArea.addEventListener('dragleave', () => {
         dropArea.classList.remove('drag-over');
-        dropArea.classList.add('normal');
     });
     
     dropArea.addEventListener('drop', (e) => {
         e.preventDefault();
         dropArea.classList.remove('drag-over');
-        dropArea.classList.add('normal');
         const files = Array.from(e.dataTransfer?.files || []);
         selectedFiles = [...selectedFiles, ...files];
         updateSelectedFilesList();
@@ -3875,31 +3917,32 @@ function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElemen
     
     function updateSelectedFilesList(): void {
         if (selectedFiles.length === 0) {
-            selectedFilesList.classList.remove('show');
-            uploadBtn.classList.remove('show');
+            selectedFilesList.style.display = 'none';
+            uploadBtn.style.display = 'none';
             return;
         }
         
-        selectedFilesList.classList.add('show');
-        uploadBtn.classList.add('show');
+        selectedFilesList.style.display = 'block';
+        uploadBtn.style.display = 'flex';
         
         filesContainer.innerHTML = selectedFiles.map((file, index) => `
             <div class="tdoc-file-item" data-file-index="${index}">
                 <div class="tdoc-file-info">
-                    <span class="tdoc-file-icon">📄</span>
+                    <i class="fas fa-file"></i>
                     <span class="tdoc-file-name">${escapeHtml(file.name)}</span>
                     <span class="tdoc-file-size">(${(file.size / 1024).toFixed(1)} KB)</span>
                 </div>
-                <button class="tdoc-remove-file" data-index="${index}">✕</button>
+                <button type="button" class="tdoc-remove-file" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         `).join('');
         
         filesContainer.querySelectorAll('.tdoc-remove-file').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const index = parseInt((e.target as HTMLElement).getAttribute('data-index') || '0');
+                const index = parseInt((e.currentTarget as HTMLElement).getAttribute('data-index') || '0');
                 selectedFiles.splice(index, 1);
                 updateSelectedFilesList();
-                fileInput.value = '';
             });
         });
     }
@@ -3910,33 +3953,16 @@ function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElemen
             return;
         }
         
-        const currentTaskRow = (window as any).currentTDocTaskRow || taskRow;
+        const currentTaskRow = (window as any).currentTDocTaskRow;
         if (!currentTaskRow) {
             showNotification('Error: Task not found', 'error');
             return;
         }
         
-        // Add loading state
         uploadBtn.classList.add('uploading');
-        const originalText = uploadBtn.textContent;
-        uploadBtn.textContent = 'Uploading...';
-        
-        const taskId = currentTaskRow.dataset?.taskId || currentTaskRow.dataset?.subtaskId;
-        if (!taskId) {
-            const newId = currentTaskRow.classList.contains('task-row') ? 
-                'task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7) :
-                'subtask_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-            
-            if (currentTaskRow.classList.contains('task-row')) {
-                if (currentTaskRow.dataset) currentTaskRow.dataset.taskId = newId;
-                const task = tasks.find(t => t.row === currentTaskRow);
-                if (task) task.id = newId;
-            } else {
-                if (currentTaskRow.dataset) currentTaskRow.dataset.subtaskId = newId;
-                const subtask = subtasks.find(s => s.row === currentTaskRow);
-                if (subtask) subtask.id = newId;
-            }
-        }
+        const originalHTML = uploadBtn.innerHTML;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Uploading...';
+        (uploadBtn as HTMLButtonElement).disabled = true;
         
         const docs: TaskDocument[] = selectedFiles.map(file => ({
             id: Date.now() + '_' + Math.random().toString(36).substring(2, 11),
@@ -3946,8 +3972,6 @@ function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElemen
             uploadDate: new Date()
         }));
         
-        console.log('Uploading TDoc documents:', docs.length, 'to row:', currentTaskRow);
-        
         const existingDocs = taskTDocDocuments.get(currentTaskRow) || [];
         taskTDocDocuments.set(currentTaskRow, [...existingDocs, ...docs]);
         
@@ -3955,67 +3979,67 @@ function setupTDocUploadHandlers(modal: HTMLElement, taskRow: HTMLTableRowElemen
         
         selectedFiles = [];
         updateSelectedFilesList();
-        fileInput.value = '';
         
-        const listContainer = document.getElementById('tdocDocumentsListContainer');
+        const updatedDocs = taskTDocDocuments.get(currentTaskRow) || [];
+        const listContainer = modal.querySelector('#tdocDocumentsListContainer');
         if (listContainer) {
-            listContainer.innerHTML = renderTDocDocumentsList(taskTDocDocuments.get(currentTaskRow) || [], currentTaskRow);
-            attachTDocDocumentEventListeners(currentTaskRow);
+            listContainer.innerHTML = renderTDocDocumentsList(updatedDocs, currentTaskRow);
+            attachTDocDocumentEventListenersForModal(modal, currentTaskRow);
         }
         
-        const countSpan = document.getElementById('tdocDocCount');
-        if (countSpan) countSpan.textContent = (taskTDocDocuments.get(currentTaskRow) || []).length.toString();
+        const countSpan = modal.querySelector('#tdocDocCount');
+        if (countSpan) {
+            countSpan.textContent = updatedDocs.length.toString();
+        }
         
-        // Reset button state
         uploadBtn.classList.remove('uploading');
-        uploadBtn.textContent = originalText;
+        uploadBtn.innerHTML = originalHTML;
+        (uploadBtn as HTMLButtonElement).disabled = false;
         
         showNotification(`${docs.length} file(s) uploaded successfully`, 'success');
-        
-        setTimeout(() => {
-            console.log('Auto-saving after TDoc upload...');
-            saveAllData();
-        }, 100);
+        setTimeout(() => saveAllData(), 100);
     });
 }
 
-function previewDocument(doc: TaskDocument): void{
+function previewDocument(doc: TaskDocument): void {
     const previewWindow = window.open('', '_blank', 'width=800,height=600');
     if (!previewWindow) return;
-
+    
     const html = `
         <!DOCTYPE html>
         <html>
         <head>
             <title>${escapeHtml(doc.name)}</title>
-           
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="preview-styles.css">
         </head>
         <body>
-            <div class="container">
-                <div class="doc-header">
-                    <div class="doc-icon">📄</div>
-                    <div class="doc-title">${escapeHtml(doc.name)}</div>
+            <div class="preview-container">
+                <div class="preview-doc-header">
+                    <div class="preview-doc-icon">📄</div>
+                    <div class="preview-doc-title">${escapeHtml(doc.name)}</div>
                 </div>
 
-                <div class="doc-meta">
-                    <div class="meta-row">
-                        <span class="meta-label">Size:</span>
-                        <span class="meta-value">${(doc.size / 1024).toFixed(2)} KB</span>
+                <div class="preview-doc-meta">
+                    <div class="preview-meta-row">
+                        <span class="preview-meta-label">Size:</span>
+                        <span class="preview-meta-value">${(doc.size / 1024).toFixed(2)} KB</span>
                     </div>
-                    <div class="meta-row">
-                        <span class="meta-label">Type:</span>
-                        <span class="meta-value">${escapeHtml(doc.type) || 'Unknown'}</span>
+                    <div class="preview-meta-row">
+                        <span class="preview-meta-label">Type:</span>
+                        <span class="preview-meta-value">${escapeHtml(doc.type) || 'Unknown'}</span>
                     </div>
-                    <div class="meta-row">
-                        <span class="meta-label">Uploaded:</span>
-                        <span class="meta-value">${new Date(doc.uploadDate).toLocaleString()}</span>
+                    <div class="preview-meta-row">
+                        <span class="preview-meta-label">Uploaded:</span>
+                        <span class="preview-meta-value">${new Date(doc.uploadDate).toLocaleString()}</span>
                     </div>
                 </div>
 
                 <div class="preview-placeholder">
-                    <div class="preview-icon">📋</div>
-                    <div class="preview-text">Preview not available for this file type</div>
-                    <div class="preview-note">The file would open in its native application</div>
+                    <div class="preview-placeholder-icon">📋</div>
+                    <div class="preview-placeholder-text">Preview not available for this file type</div>
+                    <div class="preview-placeholder-note">The file would open in its native application</div>
                 </div>
             </div>
         </body>
@@ -4161,12 +4185,10 @@ function applyVisibilityForMainList(mainList: MainList): void {
         Array.from(headerRow.children).forEach((th, idx) => {
             const colKey = th.getAttribute('data-column');
             if (colKey) {
-                // Fix: Replace includes() with indexOf()
                 (th as HTMLElement).style.display = visibleColumns.indexOf(colKey) !== -1 ? '' : 'none';
             } else {
                 const baseKey = Object.keys(baseIndices)[idx];
                 if (baseKey) {
-                    // Fix: Replace includes() with indexOf()
                     (th as HTMLElement).style.display = visibleColumns.indexOf(baseKey) !== -1 ? '' : 'none';
                 }
             }
@@ -4180,7 +4202,6 @@ function applyVisibilityForMainList(mainList: MainList): void {
                 if (idx < 9) {
                     const baseKey = Object.keys(baseIndices)[idx];
                     if (baseKey) {
-                        // Fix: Replace includes() with indexOf()
                         (cell as HTMLElement).style.display = visibleColumns.indexOf(baseKey) !== -1 ? '' : 'none';
                     }
                 }
@@ -4189,7 +4210,6 @@ function applyVisibilityForMainList(mainList: MainList): void {
             row.querySelectorAll('.extra-cell').forEach(cell => {
                 const colKey = cell.getAttribute('data-column');
                 if (colKey) {
-                    // Fix: Replace includes() with indexOf()
                     (cell as HTMLElement).style.display = visibleColumns.indexOf(colKey) !== -1 ? '' : 'none';
                 }
             });
@@ -4214,7 +4234,6 @@ function updateSublistRowsColspan(): void {
     });
     
     columnConfig.forEach(col => {
-        // Fix: Replace includes() with indexOf()
         if (baseColumns.indexOf(col.key) === -1 && col.visible) {
             visibleCount++;
         }
@@ -4368,64 +4387,197 @@ function updateSortIconsInTable(table: Element, activeHeader: HTMLElement, direc
 
 function sortTableByColumnPreservingHierarchy(columnKey: string, direction: 'asc' | 'desc'): void {
     console.log('Sorting by', columnKey, direction);
+    
+    // Get ALL tables - both main list tables and any other tables
     const tables = document.querySelectorAll('.main-list-table-container .skystemtaskmaster-table');
     
     tables.forEach(table => {
         const tbody = table.querySelector('tbody');
         if (!tbody) return;
         
+        // Get ALL rows from tbody
         const allRows = Array.from(tbody.querySelectorAll('tr'));
         
+        // Separate rows by type
         const mainListRows = allRows.filter(row => row.classList.contains('main-list-title-row'));
         const subListRows = allRows.filter(row => row.classList.contains('sub-list-row'));
         const taskRows = allRows.filter(row => row.classList.contains('task-row'));
+        const subtaskRows = allRows.filter(row => row.classList.contains('subtask-row'));
+        const headerRows = allRows.filter(row => row.classList.contains('skystemtaskmaster-subtask-header'));
         
+        // Group tasks by their parent sublist
         const tasksBySublist: Record<string, HTMLTableRowElement[]> = {};
         taskRows.forEach(row => {
-            const sublistId = row.getAttribute('data-sublist-id') || '';
+            // Try to get sublist ID from various attributes
+            const sublistId = row.getAttribute('data-sublist-id') || 
+                             row.getAttribute('data-parent-sublist') ||
+                             findParentSublistId(row, subListRows);
+            
             if (!tasksBySublist[sublistId]) {
                 tasksBySublist[sublistId] = [];
             }
             tasksBySublist[sublistId].push(row);
         });
         
+        // Group subtasks similarly if needed
+        const subtasksByParent: Record<string, HTMLTableRowElement[]> = {};
+        subtaskRows.forEach(row => {
+            const parentId = row.getAttribute('data-parent-id') || 'ungrouped';
+            if (!subtasksByParent[parentId]) {
+                subtasksByParent[parentId] = [];
+            }
+            subtasksByParent[parentId].push(row);
+        });
+        
+        // Sort tasks within each sublist
         Object.keys(tasksBySublist).forEach(sublistId => {
             tasksBySublist[sublistId].sort((a, b) => {
-                const aVal = getCellValueForSort(a, columnKey);
-                const bVal = getCellValueForSort(b, columnKey);
+                let aVal = getCellValueForSort(a, columnKey);
+                let bVal = getCellValueForSort(b, columnKey);
+                
+                // Handle different data types
+                if (columnKey === 'dueDate') {
+                    const aTime = parseDueDateForSort(aVal as string);
+                    const bTime = parseDueDateForSort(bVal as string);
+                    return compareValues(aTime, bTime, direction);
+                } else if (columnKey === 'days') {
+                    const aNum = parseDaysForSort(aVal as string);
+                    const bNum = parseDaysForSort(bVal as string);
+                    return compareValues(aNum, bNum, direction);
+                } else {
+                    return compareValues(aVal, bVal, direction);
+                }
+            });
+        });
+        
+        // Sort subtasks if needed
+        Object.keys(subtasksByParent).forEach(parentId => {
+            subtasksByParent[parentId].sort((a, b) => {
+                let aVal = getCellValueForSort(a, columnKey);
+                let bVal = getCellValueForSort(b, columnKey);
                 return compareValues(aVal, bVal, direction);
             });
         });
         
+        // Rebuild the tbody content while preserving structure
         const fragment = document.createDocumentFragment();
+        
+        // First, add all main list rows
         mainListRows.forEach(row => {
             fragment.appendChild(row);
-            const mainListId = row.getAttribute('data-mainlist-id');
-            const sublistRowsForMain = subListRows.filter(sr => sr.getAttribute('data-mainlist-id') === mainListId);
-            sublistRowsForMain.forEach(sublistRow => {
-                fragment.appendChild(sublistRow);
-                
-                const sublistId = sublistRow.getAttribute('data-sublist-id') || '';
-                const sortedTasks = tasksBySublist[sublistId] || [];
-                sortedTasks.forEach(taskRow => fragment.appendChild(taskRow));
+        });
+        
+        // Then add sublist rows with their tasks
+        subListRows.forEach(sublistRow => {
+            fragment.appendChild(sublistRow);
+            
+            // Get the sublist ID for this row
+            const sublistId = sublistRow.getAttribute('data-sublist-id') || 
+                             sublistRow.id || 
+                             `sublist_${Date.now()}`;
+            
+            // Add all tasks for this sublist in sorted order
+            const tasksForThisSublist = tasksBySublist[sublistId] || [];
+            tasksForThisSublist.forEach(taskRow => {
+                fragment.appendChild(taskRow);
+                // Make sure task is visible
+                taskRow.style.display = '';
             });
         });
         
+        // Add any remaining tasks that don't belong to a sublist
+        const processedTaskRows = new Set();
+        Object.values(tasksBySublist).forEach(tasks => {
+            tasks.forEach(task => processedTaskRows.add(task));
+        });
+        
+        const orphanedTasks = taskRows.filter(task => !processedTaskRows.has(task));
+        orphanedTasks.forEach(task => {
+            fragment.appendChild(task);
+            task.style.display = '';
+        });
+        
+        // Add subtask header if it exists
+        headerRows.forEach(row => {
+            fragment.appendChild(row);
+            row.style.display = '';
+        });
+        
+        // Add subtasks
+        Object.values(subtasksByParent).forEach(subtasks => {
+            subtasks.forEach(subtask => {
+                fragment.appendChild(subtask);
+                subtask.style.display = '';
+            });
+        });
+        
+        // Add any remaining orphaned subtasks
+        const processedSubtasks = new Set();
+        Object.values(subtasksByParent).forEach(subtasks => {
+            subtasks.forEach(subtask => processedSubtasks.add(subtask));
+        });
+        
+        const orphanedSubtasks = subtaskRows.filter(subtask => !processedSubtasks.has(subtask));
+        orphanedSubtasks.forEach(subtask => {
+            fragment.appendChild(subtask);
+            subtask.style.display = '';
+        });
+        
+        // Clear and rebuild tbody
         while (tbody.firstChild) {
             tbody.removeChild(tbody.firstChild);
         }
         tbody.appendChild(fragment);
+        
+        // Ensure all rows are visible after sorting
+        allRows.forEach(row => {
+            if (row instanceof HTMLElement) {
+                row.style.display = '';
+            }
+        });
     });
     
     showNotification(`Sorted by ${columnKey} (${direction === 'asc' ? 'Ascending' : 'Descending'})`);
 }
 
+function findParentSublistId(taskRow: HTMLTableRowElement, subListRows: HTMLTableRowElement[]): string {
+    let prev = taskRow.previousElementSibling;
+    while (prev) {
+        if (prev.classList.contains('sub-list-row')) {
+            return prev.getAttribute('data-sublist-id') || prev.id || 'unknown';
+        }
+        prev = prev.previousElementSibling;
+    }
+    return 'orphaned';
+}
+
+function parseDueDateForSort(dateStr: string): number {
+    if (!dateStr || dateStr === 'Set due date' || dateStr === '—') {
+        return Infinity;
+    }
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+            return Infinity;
+        }
+        return date.getTime();
+    } catch (e) {
+        return Infinity;
+    }
+}
+
+function parseDaysForSort(daysStr: string): number {
+    if (!daysStr || daysStr === '0') return 0;
+    const num = parseInt(daysStr.replace('+', ''), 10);
+    return isNaN(num) ? 0 : num;
+}
 function getCellValueForSort(row: HTMLTableRowElement, columnKey: string): string | number {
     const baseIndices: Record<string, number> = {
         taskName: 0, acc: 1, tdoc: 2, dueDate: 3, status: 4,
         owner: 5, reviewer: 6, cdoc: 7, days: 8
     };
     
+    // Handle base columns
     if (baseIndices[columnKey] !== undefined) {
         const cell = row.cells[baseIndices[columnKey]];
         if (!cell) return '';
@@ -4435,15 +4587,15 @@ function getCellValueForSort(row: HTMLTableRowElement, columnKey: string): strin
             return badge ? (badge.textContent?.trim() || '') : (cell.textContent?.trim() || '');
         }
         
+        if (columnKey === 'dueDate') {
+            const val = cell.textContent?.trim() || '';
+            if (val === 'Set due date' || val === '—') return Infinity;
+            return val;
+        }
+        
         if (columnKey === 'days') {
             const val = cell.textContent?.trim() || '0';
             return parseInt(val.replace('+', '')) || 0;
-        }
-        
-        if (columnKey === 'dueDate') {
-            const val = cell.textContent?.trim() || '';
-            if (val === 'Set due date') return 0;
-            return new Date(val).getTime() || 0;
         }
         
         return cell.textContent?.trim() || '';
@@ -4452,8 +4604,26 @@ function getCellValueForSort(row: HTMLTableRowElement, columnKey: string): strin
     const extraCell = Array.from(row.querySelectorAll('.extra-cell')).find(
         cell => cell.getAttribute('data-column') === columnKey
     );
-    return extraCell ? (extraCell.textContent?.trim() || '') : '';
+    
+    if (extraCell) {
+        let value = extraCell.textContent?.trim() || '';
+        
+        if (columnKey === 'taskStatus') {
+            return value || 'Not Started';
+        }
+        
+        if (columnKey === 'assigneeDueDate' || columnKey === 'reviewerDueDate' || columnKey === 'completionDate') {
+            if (value === '—' || !value) return Infinity;
+            return value;
+        }
+        
+        return value;
+    }
+    
+    return '';
 }
+
+
 
 function compareValues(a: string | number, b: string | number, direction: 'asc' | 'desc'): number {
     const multiplier = direction === 'asc' ? 1 : -1;
@@ -4474,7 +4644,7 @@ function compareValues(a: string | number, b: string | number, direction: 'asc' 
 // SAVE/LOAD FUNCTIONS
 // ================================
 
-function saveAllData(): boolean {  // Changed from void to boolean
+function saveAllData(): boolean {  
     try {
         const tasksData = tasks.map(task => ({
             id: task.id, 
@@ -4850,7 +5020,6 @@ function addAccountTooltipStyles(): void {
 }
 
 function showAccountDetails(account: Account, taskRow: HTMLTableRowElement, task: Task): void {
-    // Ensure styles are loaded
     addAccountTooltipStyles();
     
     document.querySelectorAll('.account-tooltip').forEach(el => el.remove());
@@ -4891,7 +5060,6 @@ function showAccountDetails(account: Account, taskRow: HTMLTableRowElement, task
     tooltip.style.left = (rect.left + window.scrollX + 50) + 'px';
     tooltip.style.top = (rect.top + window.scrollY - 100) + 'px';
     
-    // Adjust if tooltip goes off screen
     const tooltipRect = tooltip.getBoundingClientRect();
     if (tooltipRect.right > window.innerWidth) {
         tooltip.style.left = (rect.left + window.scrollX - tooltipRect.width - 10) + 'px';
@@ -4941,161 +5109,99 @@ function showAccountDetails(account: Account, taskRow: HTMLTableRowElement, task
 }
 
 function showAccountLinkingModal(taskRow: HTMLTableRowElement, task: Task): void {
-    // Ensure styles are loaded
-    addAccountTooltipStyles();
+    const accountModal = document.getElementById('accountLinkingModal') as HTMLElement;
+    
+    if (!accountModal) {
+        console.error('Account linking modal template not found');
+        return;
+    }
+    
+    const modalClone = accountModal.cloneNode(true) as HTMLElement;
+    modalClone.id = 'accountLinkingModal';
+    modalClone.style.display = 'block';
     
     const existingModal = document.getElementById('accountLinkingModal');
-    if (existingModal) existingModal.remove();
-
+    if (existingModal && existingModal !== accountModal) {
+        existingModal.remove();
+    }
+    
     const taskName = task.name || task.taskNameCell?.querySelector('span')?.textContent || 'Task';
+    const taskNameElement = modalClone.querySelector('#accountTaskName');
+    if (taskNameElement) {
+        taskNameElement.textContent = escapeHtml(taskName);
+    }
     
-    const modal = document.createElement('div');
-    modal.id = 'accountLinkingModal';
-    modal.className = 'modal';
-    modal.style.display = 'block';
-
-    modal.innerHTML = `
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 class="cdoc-header">📊 Link Account to Task</h3>
-            
-            <div class="account-info-box">
-                <div class="account-info-label">Task:</div>
-                <div class="account-info-name">${escapeHtml(taskName)}</div>
-            </div>
-            
-            <div class="account-form-grid">
-                <div>
-                    <h4 class="account-section-title">Account Details</h4>
-                    <div class="account-form-group">
-                        <label class="account-form-label">Organizational Hierarchy</label>
-                        <select id="orgHierarchy" class="account-form-select">
-                            <option value="">Select Hierarchy...</option>
-                            <option value="Corporate">Corporate</option>
-                            <option value="Division">Division</option>
-                            <option value="Department">Department</option>
-                            <option value="Subsidiary">Subsidiary</option>
-                        </select>
-                    </div>
-                    <div class="account-form-group">
-                        <label class="account-form-label">FS Caption</label>
-                        <input type="text" id="fsCaption" class="account-form-input" placeholder="e.g., Cash & Equivalents">
-                    </div>
-                    <div class="account-form-group">
-                        <label class="account-form-label">Account Name *</label>
-                        <input type="text" id="accountName" class="account-form-input" placeholder="e.g., Cash & Cash Equivalents">
-                    </div>
-                    <div class="account-form-group">
-                        <label class="account-form-label">Account Owners</label>
-                        <select id="accountOwners" class="account-form-multiple" multiple size="3">
-                            <option value="PK">Palakh Khanna</option>
-                            <option value="SM">Sarah Miller</option>
-                            <option value="MP">Mel Preparer</option>
-                            <option value="PP">Poppy Pan</option>
-                            <option value="JS">John Smith</option>
-                            <option value="EW">Emma Watson</option>
-                            <option value="DB">David Brown</option>
-                        </select>
-                        <div class="form-helper-text">Ctrl+Click to select multiple</div>
-                    </div>
-                </div>
-                
-                <div>
-                    <h4 class="account-section-title">Account Range & Settings</h4>
-                    <div class="number-input-row">
-                        <div class="account-form-group">
-                            <label class="account-form-label">Account # From</label>
-                            <input type="text" id="accountFrom" class="account-form-input" placeholder="e.g., 1000">
-                        </div>
-                        <div class="account-form-group">
-                            <label class="account-form-label">Account # To</label>
-                            <input type="text" id="accountTo" class="account-form-input" placeholder="e.g., 1999">
-                        </div>
-                    </div>
-                    <div class="number-input-row">
-                        <div class="account-form-group">
-                            <label class="account-form-label">Due Days From</label>
-                            <input type="number" id="dueDaysFrom" class="account-form-input" placeholder="0">
-                        </div>
-                        <div class="account-form-group">
-                            <label class="account-form-label">Due Days To</label>
-                            <input type="number" id="dueDaysTo" class="account-form-input" placeholder="30">
-                        </div>
-                    </div>
-                    <div class="account-form-group">
-                        <label class="account-form-label">Is Key Account</label>
-                        <select id="isKeyAccount" class="account-form-select">
-                            <option value="All">All</option>
-                            <option value="Yes">Yes</option>
-                            <option value="No">No</option>
-                        </select>
-                    </div>
-                    <div class="account-form-group">
-                        <label class="account-form-label">Risk Rating</label>
-                        <select id="riskRating" class="account-form-select">
-                            <option value="All">All</option>
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="account-modal-footer">
-                <button id="cancelAccountBtn" class="btn-cancel-account">Cancel</button>
-                <button id="linkAccountBtn" class="btn-link-account">Link Account</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
+    document.body.appendChild(modalClone);
     
     const close = () => {
-        modal.classList.add('fade-out');
-        setTimeout(() => modal.remove(), 200);
+        modalClone.classList.add('fade-out');
+        setTimeout(() => modalClone.remove(), 200);
     };
     
-    modal.querySelector('.close')?.addEventListener('click', close);
-    document.getElementById('cancelAccountBtn')?.addEventListener('click', close);
-    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    const closeBtn = modalClone.querySelector('.close');
+    if (closeBtn) closeBtn.addEventListener('click', close);
     
-    document.getElementById('linkAccountBtn')?.addEventListener('click', () => {
-        const accountName = (document.getElementById('accountName') as HTMLInputElement).value.trim();
-        if (!accountName) {
-            showNotification('Please enter Account Name', 'error');
-            return;
-        }
-        
-        const account: Account = {
-            orgHierarchy: (document.getElementById('orgHierarchy') as HTMLSelectElement).value,
-            fsCaption: (document.getElementById('fsCaption') as HTMLInputElement).value.trim(),
-            accountName: accountName,
-            accountNumber: (document.getElementById('accountFrom') as HTMLInputElement).value || accountName,
-            accountOwners: Array.from((document.getElementById('accountOwners') as HTMLSelectElement).selectedOptions).map(opt => opt.value),
-            accountFrom: (document.getElementById('accountFrom') as HTMLInputElement).value.trim(),
-            accountTo: (document.getElementById('accountTo') as HTMLInputElement).value.trim(),
-            dueDaysFrom: parseInt((document.getElementById('dueDaysFrom') as HTMLInputElement).value) || 0,
-            dueDaysTo: parseInt((document.getElementById('dueDaysTo') as HTMLInputElement).value) || 0,
-            isKeyAccount: (document.getElementById('isKeyAccount') as HTMLSelectElement).value,
-            riskRating: (document.getElementById('riskRating') as HTMLSelectElement).value,
-            linkedDate: new Date().toISOString(),
-            linkedBy: 'PK'
-        };
-        
-        const taskId = task.id || task.row?.getAttribute('data-task-id') || '';
-        const current = taskAccounts.get(task.row!) || taskAccounts.get(taskId) || [];
-        const updated = [...current, account];
-        
-        taskAccounts.set(task.row!, updated);
-        if (taskId) taskAccounts.set(taskId, updated);
-        task.linkedAccounts = JSON.stringify(updated);
-        
-        refreshLinkedAccountsColumn();
-        close();
-        showNotification(`Account "${accountName}" linked`, 'success');
-        setTimeout(() => saveAllData(), 100);
+    const cancelBtn = modalClone.querySelector('#cancelAccountBtn');
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    
+    modalClone.addEventListener('click', (e) => { 
+        if (e.target === modalClone) close(); 
     });
+    
+    const linkBtn = modalClone.querySelector('#linkAccountBtn');
+    if (linkBtn) {
+        linkBtn.addEventListener('click', () => {
+            const accountNameInput = modalClone.querySelector('#accountName') as HTMLInputElement;
+            const accountName = accountNameInput?.value.trim() || '';
+            
+            if (!accountName) {
+                showNotification('Please enter Account Name', 'error');
+                return;
+            }
+            
+            const orgHierarchy = (modalClone.querySelector('#orgHierarchy') as HTMLSelectElement)?.value || '';
+            const fsCaption = (modalClone.querySelector('#fsCaption') as HTMLInputElement)?.value.trim() || '';
+            const accountFrom = (modalClone.querySelector('#accountFrom') as HTMLInputElement)?.value.trim() || '';
+            const accountTo = (modalClone.querySelector('#accountTo') as HTMLInputElement)?.value.trim() || '';
+            const dueDaysFrom = parseInt((modalClone.querySelector('#dueDaysFrom') as HTMLInputElement)?.value || '0') || 0;
+            const dueDaysTo = parseInt((modalClone.querySelector('#dueDaysTo') as HTMLInputElement)?.value || '0') || 0;
+            const isKeyAccount = (modalClone.querySelector('#isKeyAccount') as HTMLSelectElement)?.value || 'All';
+            const riskRating = (modalClone.querySelector('#riskRating') as HTMLSelectElement)?.value || 'All';
+            
+            const accountOwnersSelect = modalClone.querySelector('#accountOwners') as HTMLSelectElement;
+            const accountOwners = accountOwnersSelect ? 
+                Array.from(accountOwnersSelect.selectedOptions).map(opt => opt.value) : [];
+            
+            const account: Account = {
+                orgHierarchy: orgHierarchy,
+                fsCaption: fsCaption,
+                accountName: accountName,
+                accountNumber: accountFrom || accountName,
+                accountOwners: accountOwners,
+                accountFrom: accountFrom,
+                accountTo: accountTo,
+                dueDaysFrom: dueDaysFrom,
+                dueDaysTo: dueDaysTo,
+                isKeyAccount: isKeyAccount,
+                riskRating: riskRating,
+                linkedDate: new Date().toISOString(),
+                linkedBy: 'PK'
+            };
+            
+            const taskId = task.id || task.row?.getAttribute('data-task-id') || '';
+            const current = taskAccounts.get(task.row!) || taskAccounts.get(taskId) || [];
+            const updated = [...current, account];
+            
+            taskAccounts.set(task.row!, updated);
+            if (taskId) taskAccounts.set(taskId, updated);
+            task.linkedAccounts = JSON.stringify(updated);
+            
+            refreshLinkedAccountsColumn();
+            close();
+            showNotification(`Account "${accountName}" linked`, 'success');
+            setTimeout(() => saveAllData(), 100);
+        });
+    }
 }
 
 // ================================
@@ -5918,34 +6024,100 @@ function handleDownload(format: string): void {
 }
 
 function downloadAsExcel(): void {
-    const table = document.getElementById('mainTable');
-    if (!table) return;
+    // Get all task and subtask data from the actual data structures
+    const exportData = [];
     
-    let csv: string[] = [];
-    const rows = table.querySelectorAll('tr');
+    // Add headers
+    const headers = ['Task Name', 'Acc', 'Task Doc', 'Due Date', 'Status', 'Owner', 'Reviewer', 'Completion Doc', '+/- Days'];
     
-    for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const cells = row.querySelectorAll('th, td');
-        const rowData: string[] = [];
-        
-        for (let j = 0; j < cells.length; j++) {
-            const cell = cells[j] as HTMLElement;
-            if (cell.style.display === 'none') continue;
-            let text = cell.textContent?.trim() || '';
-            text = text.replace(/[☑⬇]/g, '').trim();
-            rowData.push('"' + text + '"');
+    // Add extra column headers
+    columnConfig.forEach(col => {
+        const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
+        if (baseColumns.indexOf(col.key) === -1 && col.visible !== false) {
+            headers.push(col.label);
         }
-        
-        if (rowData.length > 0) csv.push(rowData.join(','));
-    }
+    });
+    exportData.push(headers);
     
-    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    // Add task data
+    tasks.forEach(task => {
+        const row = [];
+        row.push(task.name || '');
+        row.push(task.acc || '+');
+        row.push(task.tdoc || '0');
+        row.push(task.dueDateCell?.innerText || task.dueDate || 'Set due date');
+        row.push(task.statusBadge?.innerText || task.status || 'Not Started');
+        row.push(task.owner || 'PK');
+        row.push(task.reviewer || 'SM');
+        
+        // Get CDoc count
+        const docs = taskDocuments.get(task.row!) || [];
+        row.push(docs.length.toString());
+        
+        // Calculate days
+        let daysText = '0';
+        if (task.dueDate) {
+            const today = new Date();
+            const due = new Date(task.dueDate);
+            const diffTime = due.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysText = diffDays >= 0 ? '+' + diffDays : diffDays.toString();
+        }
+        row.push(daysText);
+        
+        // Add extra column values
+        const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
+        columnConfig.forEach(col => {
+            if (baseColumns.indexOf(col.key) === -1 && col.visible !== false) {
+                let value = getTaskColumnValue(task, col.key);
+                if (col.key === 'tdoc') {
+                    const tdocs = taskTDocDocuments.get(task.row!) || [];
+                    value = tdocs.length.toString();
+                }
+                row.push(value);
+            }
+        });
+        
+        exportData.push(row);
+    });
+    
+    // Add subtask data
+    subtasks.forEach(subtask => {
+        const row = [];
+        row.push(subtask.name || '');
+        row.push(''); // Acc column empty for subtasks
+        row.push(subtask.tdoc || '0');
+        row.push(subtask.dueDate || 'Set due date');
+        row.push(subtask.statusBadge?.innerText || subtask.status || 'Not Started');
+        row.push(subtask.owner || 'PK');
+        row.push(subtask.reviewer || 'SM');
+        row.push(''); // Completion Doc column empty for subtasks
+        row.push('0'); // Days column empty for subtasks
+        
+        // Add extra column values for subtasks
+        const baseColumns = ['taskName', 'acc', 'tdoc', 'dueDate', 'status', 'owner', 'reviewer', 'cdoc', 'days'];
+        columnConfig.forEach(col => {
+            if (baseColumns.indexOf(col.key) === -1 && col.visible !== false && col.forSubtask) {
+                let value = getTaskColumnValue(subtask as any, col.key);
+                row.push(value);
+            }
+        });
+        
+        exportData.push(row);
+    });
+    
+    // Convert to CSV
+    let csv = exportData.map(row => 
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'tasks_export.csv';
     a.click();
+    window.URL.revokeObjectURL(url);
     showNotification('Downloaded as Excel format');
 }
 
@@ -5955,49 +6127,82 @@ function downloadAsCsv(): void {
 }
 
 function downloadAsJson(): void {
-    const table = document.getElementById('mainTable');
-    if (!table) return;
+    const exportData = {
+        tasks: tasks.map(task => ({
+            id: task.id,
+            name: task.name,
+            acc: task.acc,
+            tdoc: task.tdoc,
+            owner: task.owner,
+            reviewer: task.reviewer,
+            dueDate: task.dueDate,
+            status: task.statusBadge?.innerText || task.status,
+            taskNumber: task.taskNumber,
+            taskOwner: task.taskOwner,
+            taskStatus: task.taskStatus,
+            approver: task.approver,
+            recurrenceType: task.recurrenceType,
+            completionDoc: task.completionDoc,
+            createdBy: task.createdBy,
+            comment: task.comment,
+            assigneeDueDate: task.assigneeDueDate,
+            customField1: task.customField1,
+            reviewerDueDate: task.reviewerDueDate,
+            customField2: task.customField2,
+            linkedAccounts: task.linkedAccounts,
+            completionDate: task.completionDate,
+            notifier: task.notifier,
+            documents: (taskDocuments.get(task.row!) || []).map(doc => ({
+                name: doc.name,
+                size: doc.size,
+                type: doc.type,
+                uploadDate: doc.uploadDate
+            })),
+            tdocDocuments: (taskTDocDocuments.get(task.row!) || []).map(doc => ({
+                name: doc.name,
+                size: doc.size,
+                type: doc.type,
+                uploadDate: doc.uploadDate
+            })),
+            comments: taskComments[getCommentKey(task.id, 'task')] || []
+        })),
+        subtasks: subtasks.map(subtask => ({
+            id: subtask.id,
+            name: subtask.name,
+            tdoc: subtask.tdoc,
+            owner: subtask.owner,
+            reviewer: subtask.reviewer,
+            dueDate: subtask.dueDate,
+            status: subtask.statusBadge?.innerText || subtask.status,
+            taskNumber: subtask.taskNumber,
+            taskOwner: subtask.taskOwner,
+            taskStatus: subtask.taskStatus,
+            approver: subtask.approver,
+            recurrenceType: subtask.recurrenceType,
+            createdBy: subtask.createdBy,
+            comment: subtask.comment
+        })),
+        mainLists: mainLists.map(list => ({
+            id: list.id,
+            name: list.name,
+            isExpanded: list.isExpanded
+        })),
+        subLists: subLists.map(list => ({
+            id: list.id,
+            name: list.name,
+            mainListId: list.mainListId,
+            isExpanded: list.isExpanded
+        }))
+    };
     
-    const data: any[] = [];
-    const rows = table.querySelectorAll('tr');
-    
-    const headers: string[] = [];
-    const headerRow = rows[0].querySelectorAll('th');
-    headerRow.forEach(th => {
-        if ((th as HTMLElement).style.display !== 'none') {
-            headers.push(th.textContent?.trim() || '');
-        }
-    });
-    
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        const cells = row.querySelectorAll('td');
-        const rowData: any = {};
-        
-        let cellIndex = 0;
-        for (let j = 0; j < cells.length; j++) {
-            const cell = cells[j] as HTMLElement;
-            if (cell.style.display !== 'none' && cellIndex < headers.length) {
-                let value = cell.textContent?.trim() || '';
-                value = value.replace(/[☑⬇]/g, '').trim();
-                rowData[headers[cellIndex]] = value;
-                cellIndex++;
-            }
-        }
-        
-        if (Object.keys(rowData).length > 0) {
-            data.push(rowData);
-        }
-    }
-    
-    const jsonStr = JSON.stringify(data, null, 2);
+    const jsonStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'tasks_export.json';
     a.click();
-    
+    window.URL.revokeObjectURL(url);
     showNotification('Downloaded as JSON');
 }
 
@@ -6012,107 +6217,28 @@ function addFilterModalStyles(): void {
 }
 
 function showFilterPanel(): void {
-    // Ensure styles are loaded
-    addFilterModalStyles();
+    const filterModal = document.getElementById('filterModal') as HTMLElement;
     
+    if (!filterModal) {
+        console.error('Filter modal template not found');
+        return;
+    }
+    
+    const modalClone = filterModal.cloneNode(true) as HTMLElement;
+    modalClone.id = 'filterModal';
+    modalClone.style.display = 'block';
     const existingModal = document.getElementById('filterModal');
-    if (existingModal) existingModal.remove();
+    if (existingModal && existingModal !== filterModal) {
+        existingModal.remove();
+    }
     
-    const filterModal = document.createElement('div');
-    filterModal.id = 'filterModal';
-    filterModal.className = 'modal';
-    
-    filterModal.innerHTML = `
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 class="cdoc-header"><i class="fas fa-filter"></i> Filter Tasks</h3>
-            
-            <div class="filter-body">
-                <div class="filter-form-group">
-                    <label class="filter-label">Status</label>
-                    <select id="filterStatus" class="filter-select">
-                        <option value="all">All</option>
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Review">Review</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                        <option value="Hold">Hold</option>
-                        <option value="Overdue">Overdue</option>
-                    </select>
-                </div>
-                
-                <div class="filter-form-group">
-                    <label class="filter-label">Task Owner</label>
-                    <select id="filterOwner" class="filter-select">
-                        <option value="all">All</option>
-                        <option value="PK">PK - Palakh Khanna</option>
-                        <option value="SM">SM - Sarah Miller</option>
-                        <option value="MP">MP - Mel Preparer</option>
-                        <option value="PP">PP - Poppy Pan</option>
-                        <option value="JS">JS - John Smith</option>
-                        <option value="EW">EW - Emma Watson</option>
-                        <option value="DB">DB - David Brown</option>
-                    </select>
-                </div>
-                
-                <div class="filter-form-group">
-                    <label class="filter-label">Due Date</label>
-                    <select id="filterDueDate" class="filter-select">
-                        <option value="all">All</option>
-                        <option value="overdue">Overdue</option>
-                        <option value="today">Today</option>
-                        <option value="week">Next 7 days</option>
-                        <option value="month">Next 30 days</option>
-                        <option value="future">Beyond 30 days</option>
-                    </select>
-                </div>
-
-                <div class="filter-form-group">
-                    <label class="filter-label">Recurrence Type</label>
-                    <select id="filterRecurrence" class="filter-select">
-                        <option value="all">All</option>
-                        <option value="none">Non-Recurring (None)</option>
-                        <option value="recurring">Recurring (All Types)</option>
-                        <option value="Every Period">Every Period</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="Annual">Annual</option>
-                    </select>
-                </div>
-
-                <div class="filter-options-container">
-                    <label class="filter-checkbox-group">
-                        <input type="checkbox" id="hideEmptyLists">
-                        <span>Hide empty lists/sublists</span>
-                    </label>
-                    <label class="filter-checkbox-group">
-                        <input type="checkbox" id="showTaskCount">
-                        <span>Show filtered task count in lists</span>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="filter-modal-footer">
-                <button id="clearFilterBtn" class="btn-clear-filter">
-                    <i class="fas fa-trash-alt"></i> Clear All
-                </button>
-                <button id="applyFilterBtn" class="btn-apply-filter">
-                    <i class="fas fa-check"></i> Apply Filter
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(filterModal);
-    
-    // Set current filter values
-    const filterStatus = document.getElementById('filterStatus') as HTMLSelectElement;
-    const filterOwner = document.getElementById('filterOwner') as HTMLSelectElement;
-    const filterDueDate = document.getElementById('filterDueDate') as HTMLSelectElement;
-    const filterRecurrence = document.getElementById('filterRecurrence') as HTMLSelectElement;
-    const hideEmptyLists = document.getElementById('hideEmptyLists') as HTMLInputElement;
-    const showTaskCount = document.getElementById('showTaskCount') as HTMLInputElement;
+    document.body.appendChild(modalClone);
+    const filterStatus = modalClone.querySelector('#filterStatus') as HTMLSelectElement;
+    const filterOwner = modalClone.querySelector('#filterOwner') as HTMLSelectElement;
+    const filterDueDate = modalClone.querySelector('#filterDueDate') as HTMLSelectElement;
+    const filterRecurrence = modalClone.querySelector('#filterRecurrence') as HTMLSelectElement;
+    const hideEmptyLists = modalClone.querySelector('#hideEmptyLists') as HTMLInputElement;
+    const showTaskCount = modalClone.querySelector('#showTaskCount') as HTMLInputElement;
     
     if (filterStatus) filterStatus.value = currentFilters.status;
     if (filterOwner) filterOwner.value = currentFilters.owner;
@@ -6122,14 +6248,14 @@ function showFilterPanel(): void {
     if (showTaskCount) showTaskCount.checked = currentFilters.showTaskCount;
     
     const close = () => {
-        filterModal.classList.add('fade-out');
-        setTimeout(() => filterModal.remove(), 200);
+        modalClone.classList.add('fade-out');
+        setTimeout(() => modalClone.remove(), 200);
     };
     
-    const closeBtn = filterModal.querySelector('.close') as HTMLElement;
+    const closeBtn = modalClone.querySelector('.close') as HTMLElement;
     if (closeBtn) closeBtn.addEventListener('click', close);
     
-    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    const applyFilterBtn = modalClone.querySelector('#applyFilterBtn');
     if (applyFilterBtn) {
         applyFilterBtn.addEventListener('click', () => {
             currentFilters = {
@@ -6148,7 +6274,7 @@ function showFilterPanel(): void {
         });
     }
     
-    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    const clearFilterBtn = modalClone.querySelector('#clearFilterBtn');
     if (clearFilterBtn) {
         clearFilterBtn.addEventListener('click', () => {
             currentFilters = {
@@ -6166,16 +6292,12 @@ function showFilterPanel(): void {
         });
     }
     
-    // Close modal when clicking outside
-    filterModal.addEventListener('click', (e) => {
-        if (e.target === filterModal) {
+    modalClone.addEventListener('click', (e) => {
+        if (e.target === modalClone) {
             close();
         }
     });
-    
-    filterModal.style.display = 'block';
 }
-
 function applyHierarchicalFilters(): void {
     console.log('Applying hierarchical filters:', currentFilters);
     
@@ -6238,7 +6360,6 @@ function applyHierarchicalFilters(): void {
                 if (recurrenceType !== 'None') matches = false;
             } else if (currentFilters.recurrence === 'recurring') {
                 const recurringOptions = ['Every Period', 'Quarterly', 'Annual'];
-                // Fix: Replace includes() with indexOf()
                 if (recurringOptions.indexOf(recurrenceType) === -1) matches = false;
             } else {
                 if (recurrenceType !== currentFilters.recurrence) matches = false;
@@ -6338,7 +6459,6 @@ function addCustomizeGridStyles(): void {
 }
 
 function showCustomizeGridModal(): void {
-    // Ensure styles are loaded
     addCustomizeGridStyles();
     
     let modal = document.getElementById('customizeGridModal');
@@ -6348,7 +6468,6 @@ function showCustomizeGridModal(): void {
         modal.id = 'customizeGridModal';
         modal.className = 'modal';
         
-        // Separate mandatory and optional columns
         const mandatoryColumns = columnConfig.filter(col => col.mandatory);
         const optionalColumns = columnConfig.filter(col => !col.mandatory);
         
@@ -6568,252 +6687,106 @@ function showCreateTaskForMainList(mainList: MainList): void {
 }
 
 function showCreateTaskModalForList(mainList: MainList, subList: SubList | null = null): void {
-    // Ensure styles are loaded
-    addCreateModalStyles();
+    const modal = document.getElementById('createTaskCompleteModal') as HTMLElement;
+    if (!modal) {
+        console.error('Create task modal template not found');
+        return;
+    }
     
-    const existingModal = document.getElementById('createTaskCompleteModal');
-    if (existingModal) existingModal.remove();
-
-    const randomID = `TSK-${Math.floor(1000 + Math.random() * 9000)}`;
-    const modal = document.createElement('div');
-    modal.id = 'createTaskCompleteModal';
-    modal.className = 'modal';
-    modal.style.display = 'block';
-
+    const modalClone = modal.cloneNode(true) as HTMLElement;
+    modalClone.id = 'createTaskCompleteModal';
+    modalClone.style.display = 'block';
+    
     const path = subList ? `${mainList.name} > ${subList.name}` : mainList.name;
-
-    const userOptions = `
-        <option value="">None</option>
-        <option value="PK">PK - Palakh Khanna (palakh@skystem.com)</option>
-        <option value="SM">SM - Sarah Miller (sarah@skystem.com)</option>
-        <option value="MP">MP - Mel Preparer (mel@skystem.com)</option>
-        <option value="PP">PP - Poppy Pan (poppy@skystem.com)</option>
-        <option value="JS">JS - John Smith (john@skystem.com)</option>
-        <option value="EW">EW - Emma Watson (emma@skystem.com)</option>
-        <option value="DB">DB - David Brown (david@skystem.com)</option>
-    `;
-
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-gradient-header">
-                <div class="modal-header-content">
-                    <h3><i class="fa-solid fa-circle-plus"></i> Create Task</h3>
-                    <span class="close modal-close-white">&times;</span>
-                </div>
-                <p class="modal-path">Path: ${escapeHtml(path)}</p>
-            </div>
-            
-            <div class="modal-body-scroll">
-                <!-- Basic Details Section -->
-                <div class="form-section">
-                    <h4 class="section-title">Basic Details</h4>
-                    <div class="form-grid-2cols">
-                        <div class="form-group">
-                            <label class="form-label">Task Name *</label>
-                            <input type="text" id="createTaskName" class="task-input" placeholder="Task Name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Task ID</label>
-                            <input type="text" id="createTaskNumber" class="task-input" style="background: #fff0f6;  color: #ff0080;" placeholder="Enter a ID">
-                        </div>
-                    </div>
-                    
-                    <div class="form-grid-3cols">
-                        <div class="form-group">
-                            <label class="form-label">Task Owner</label>
-                            <select id="createTaskOwner" class="task-input">${userOptions}</select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Reviewer</label>
-                            <select id="createTaskReviewer" class="task-input">${userOptions}</select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Approver</label>
-                            <select id="createTaskApprover" class="task-input">${userOptions}</select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-grid-2cols-equal">
-                        <div class="form-group">
-                            <label class="form-label">Dependent Task</label>
-                            <select id="createTaskDependent" class="task-input">
-                                <option value="">No Dependent</option>
-                                ${getTaskOptionsForDropdown()}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Created By</label>
-                            <select id="createTaskCreator" class="task-input">${userOptions}</select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Logistics & Recurrence Section -->
-                <div class="form-section">
-                    <h4 class="section-title">Logistics & Recurrence</h4>
-                    <div class="form-grid-3cols">
-                        <div class="form-group">
-                            <label class="form-label">Status</label>
-                            <select id="createTaskStatus" class="task-input">
-                                <option>Not Started</option>
-                                <option>In Progress</option>
-                                <option>Review</option>
-                                <option>Completed</option>
-                                <option>Approved</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Recurrence</label>
-                            <select id="createTaskRecurrence" class="task-input">
-                                <optgroup label="Recurring Tasks">
-                                    <option>Every Period</option>
-                                    <option>Quarterly</option>
-                                    <option>Annual</option>
-                                </optgroup>
-                                <optgroup label="Non-Recurring Tasks">
-                                    <option>Multiple</option>
-                                    <option>Custom</option>
-                                    <option selected>None</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Notifier</label>
-                            <select id="createTaskNotifier" class="task-input">${userOptions}</select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timeline Section -->
-                <div class="form-section">
-                    <h4 class="section-title">Timeline</h4>
-                    <div class="form-grid-3cols">
-                        <div class="form-group">
-                            <label class="form-label">Assignee Due</label>
-                            <input type="date" id="createAssigneeDate" class="task-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Reviewer Due</label>
-                            <input type="date" id="createReviewerDate" class="task-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Completion Date</label>
-                            <input type="date" id="createCompletionDate" class="task-input">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Documents Section -->
-                <div class="documents-section">
-                    <div class="documents-grid">
-                        <div class="form-group">
-                            <label class="form-label">Task Doc (TDoc) <i class="fa-solid fa-upload"></i></label>
-                            <input type="file" id="uploadTDoc" class="file-upload-input">
-                            <input type="text" id="createTaskTdoc" class="file-reference-input" placeholder="Or enter TDoc reference">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Completion Doc (CDoc) <i class="fa-solid fa-upload"></i></label>
-                            <input type="file" id="uploadCDoc" class="file-upload-input">
-                            <input type="text" id="createTaskCdoc" class="file-reference-input" placeholder="Or enter CDoc reference">
-                        </div>
-                    </div>
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label class="form-label">Linked Accounts</label>
-                        <input type="text" id="createLinkedAccounts" class="task-input" placeholder="Account IDs (comma separated)...">
-                    </div>
-                </div>
-
-                <!-- Comment Section -->
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label class="form-label">Internal Comment</label>
-                    <textarea id="createTaskComment" class="comment-textarea" rows="3" placeholder="Add any internal notes or comments..."></textarea>
-                </div>
-
-                <!-- Custom Fields Section -->
-                <div class="form-section">
-                    <h4 class="section-title">Custom Fields</h4>
-                    <div class="form-grid-2cols-equal">
-                        <div class="form-group">
-                            <label class="form-label">Custom Field #1</label>
-                            <input type="text" id="createCustomField1" class="task-input" placeholder="Custom field value...">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Custom Field #2</label>
-                            <input type="text" id="createCustomField2" class="task-input" placeholder="Custom field value...">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="modal-action-buttons">
-                    <button class="btn-cancel-task" id="cancelCreateTaskBtn">Cancel</button>
-                    <button class="btn-create-task" id="submitCreateTaskBtn">
-                        <i class="fa-solid fa-check"></i> Create Task
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
+    const pathElement = modalClone.querySelector('#modalPath');
+    if (pathElement) {
+        pathElement.textContent = `Path: ${escapeHtml(path)}`;
+    }
+    
+    const dependentSelect = modalClone.querySelector('#createTaskDependent') as HTMLSelectElement;
+    if (dependentSelect) {
+        const taskOptions = getTaskOptionsForDropdown();
+        
+        if (taskOptions && Array.isArray(taskOptions)) {
+            taskOptions.forEach((option) => {
+                const opt = document.createElement('option');
+                
+                if (typeof option === 'string') {
+                    opt.value = option;
+                    opt.textContent = option;
+                } 
+                else if (typeof option === 'object' && option !== null) {
+                    opt.value = option.value || option.text || '';
+                    opt.textContent = option.text || option.value || '';
+                }
+                
+                dependentSelect.appendChild(opt);
+            });
+        }
+    }
+    
+    document.body.appendChild(modalClone);
     
     setTimeout(() => {
-        const nameInput = document.getElementById('createTaskName') as HTMLInputElement;
+        const nameInput = modalClone.querySelector('#createTaskName') as HTMLInputElement;
         if (nameInput) nameInput.focus();
     }, 150);
-
-    const close = () => modal.remove();
-    modal.querySelector('.close')?.addEventListener('click', close);
-    document.getElementById('cancelCreateTaskBtn')?.addEventListener('click', close);
-    modal.addEventListener('click', (e) => { if(e.target === modal) close(); });
-
-    document.getElementById('submitCreateTaskBtn')?.addEventListener('click', () => {
-        const name = (document.getElementById('createTaskName') as HTMLInputElement).value.trim();
-        if (!name) {
-            showNotification('Please provide a task name', 'error');
-            (document.getElementById('createTaskName') as HTMLInputElement).focus();
-            return;
-        }
-
-        const taskData = {
-            name: name,
-            taskNumber: (document.getElementById('createTaskNumber') as HTMLInputElement).value,
-            owner: (document.getElementById('createTaskOwner') as HTMLSelectElement).value,
-            reviewer: (document.getElementById('createTaskReviewer') as HTMLSelectElement).value,
-            approver: (document.getElementById('createTaskApprover') as HTMLSelectElement).value,
-            status: (document.getElementById('createTaskStatus') as HTMLSelectElement).value,
-            recurrenceType: (document.getElementById('createTaskRecurrence') as HTMLSelectElement).value,
-            notifier: (document.getElementById('createTaskNotifier') as HTMLSelectElement).value,
-            createdBy: (document.getElementById('createTaskCreator') as HTMLSelectElement).value,
-            dueDate: (document.getElementById('createAssigneeDate') as HTMLInputElement).value,
-            reviewerDueDate: (document.getElementById('createReviewerDate') as HTMLInputElement).value,
-            completionDate: (document.getElementById('createCompletionDate') as HTMLInputElement).value,
-            tdoc: (document.getElementById('createTaskTdoc') as HTMLInputElement).value || '0',
-            cdoc: (document.getElementById('createTaskCdoc') as HTMLInputElement).value || '0',
-            linkedAccounts: (document.getElementById('createLinkedAccounts') as HTMLInputElement).value,
-            comment: (document.getElementById('createTaskComment') as HTMLTextAreaElement).value,
-            customField1: (document.getElementById('createCustomField1') as HTMLInputElement).value,
-            customField2: (document.getElementById('createCustomField2') as HTMLInputElement).value,
-            dependentTask: (document.getElementById('createTaskDependent') as HTMLSelectElement).value
-        };
-        
-        let targetSubList = subList;
-        
-        if (!targetSubList) {
-            targetSubList = mainList.subLists.length > 0 
-                ? mainList.subLists[0] 
-                : createSubList(mainList, 'Tasks');
-        }
-        
-        const newTask = createTask(targetSubList, taskData);
-        
-        if (taskData.dependentTask) {
-            dependentTasks.set(newTask.id, taskData.dependentTask);
-        }
-        
-        showNotification(`Task "${taskData.name}" added to ${targetSubList.name}`, 'success');
-        close();
-    });
+    
+    const close = () => modalClone.remove();
+    modalClone.querySelector('.close')?.addEventListener('click', close);
+    modalClone.querySelector('#cancelCreateTaskBtn')?.addEventListener('click', close);
+    modalClone.addEventListener('click', (e) => { if(e.target === modalClone) close(); });
+    
+    const submitBtn = modalClone.querySelector('#submitCreateTaskBtn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            const name = (modalClone.querySelector('#createTaskName') as HTMLInputElement).value.trim();
+            if (!name) {
+                showNotification('Please provide a task name', 'error');
+                (modalClone.querySelector('#createTaskName') as HTMLInputElement).focus();
+                return;
+            }
+            
+            const taskData = {
+                name: name,
+                taskNumber: (modalClone.querySelector('#createTaskNumber') as HTMLInputElement).value,
+                owner: (modalClone.querySelector('#createTaskOwner') as HTMLSelectElement).value,
+                reviewer: (modalClone.querySelector('#createTaskReviewer') as HTMLSelectElement).value,
+                approver: (modalClone.querySelector('#createTaskApprover') as HTMLSelectElement).value,
+                status: (modalClone.querySelector('#createTaskStatus') as HTMLSelectElement).value,
+                recurrenceType: (modalClone.querySelector('#createTaskRecurrence') as HTMLSelectElement).value,
+                notifier: (modalClone.querySelector('#createTaskNotifier') as HTMLSelectElement).value,
+                createdBy: (modalClone.querySelector('#createTaskCreator') as HTMLSelectElement).value,
+                dueDate: (modalClone.querySelector('#createAssigneeDate') as HTMLInputElement).value,
+                reviewerDueDate: (modalClone.querySelector('#createReviewerDate') as HTMLInputElement).value,
+                completionDate: (modalClone.querySelector('#createCompletionDate') as HTMLInputElement).value,
+                tdoc: (modalClone.querySelector('#createTaskTdoc') as HTMLInputElement).value || '0',
+                cdoc: (modalClone.querySelector('#createTaskCdoc') as HTMLInputElement).value || '0',
+                linkedAccounts: (modalClone.querySelector('#createLinkedAccounts') as HTMLInputElement).value,
+                comment: (modalClone.querySelector('#createTaskComment') as HTMLTextAreaElement).value,
+                customField1: (modalClone.querySelector('#createCustomField1') as HTMLInputElement).value,
+                customField2: (modalClone.querySelector('#createCustomField2') as HTMLInputElement).value,
+                dependentTask: (modalClone.querySelector('#createTaskDependent') as HTMLSelectElement).value
+            };
+            
+            let targetSubList = subList;
+            
+            if (!targetSubList) {
+                targetSubList = mainList.subLists.length > 0 
+                    ? mainList.subLists[0] 
+                    : createSubList(mainList, 'Tasks');
+            }
+            
+            const newTask = createTask(targetSubList, taskData);
+            
+            if (taskData.dependentTask) {
+                dependentTasks.set(newTask.id, taskData.dependentTask);
+            }
+            
+            showNotification(`Task "${taskData.name}" added to ${targetSubList.name}`, 'success');
+            close();
+        });
+    }
 }
 
 function getTaskOptionsForDropdown(): string {
@@ -7335,7 +7308,6 @@ function importTasksToSublist(sublist: SubList, tasks: any[], skipDuplicates: bo
     const existingTaskNames = sublist.tasks.map(t => t.name.toLowerCase());
     
     tasks.forEach(taskData => {
-        // Fix: Replace includes() with indexOf()
         if (skipDuplicates && existingTaskNames.indexOf(taskData.name.toLowerCase()) !== -1) {
             console.log('Skipping duplicate task:', taskData.name);
             return;
@@ -7392,7 +7364,7 @@ function makeExistingTasksEditable(): void {
 document.addEventListener('DOMContentLoaded', () => {
     addSeparateTableStyles();
     addSortStyles();
-    addDocumentStyles(); // Fix: Changed from addCommentStyles to addDocumentStyles
+    addDocumentStyles(); 
     addAccountStyles();
     addRecurrenceStyles();
     addDragStyles();
@@ -7474,233 +7446,25 @@ function addModalStyles(): void {
 }
 
 function createModals(): void {
-    // Ensure styles are loaded
-    addModalStyles();
+   
     
-    const modalContainer = document.createElement('div');
-    modalContainer.id = 'modalContainer';
-    modalContainer.innerHTML = `
-        <div id="newTaskOptionsModal" class="modal">
-            <div class="modal-content modal-sm">
-                <span class="close">&times;</span>
-                <h3 class="modal-title">Create New</h3>
-                <div class="modal-body">
-                    <div class="dropdown-container">
-                        <button id="newTaskMainButton" class="dropdown-main-btn">
-                            <span>
-                                <i class="fa-solid fa-clipboard-list"></i> New Checklist
-                            </span>
-                            <span class="dropdown-arrow">
-                                <i class="fa-solid fa-angle-down"></i>
-                            </span>
-                        </button>
-                        
-                        <div id="newTaskDropdown" class="dropdown-menu">
-                            <button id="newListOption" class="dropdown-item">
-                                <span>
-                                    <i class="fa-solid fa-list"></i> New List
-                                </span>
-                            </button>
-                            <button id="importTasksOption" class="dropdown-item">
-                                <span>
-                                    <i class="fa-solid fa-file-import"></i> Import Tasks
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="enterListNameModal" class="modal">
-            <div class="modal-content modal-sm">
-                <span class="close">&times;</span>
-                <h3 class="modal-title">Enter List Name</h3>
-                <div class="modal-body">
-                    <input type="text" id="listNameInput" class="modal-input" placeholder="Enter list name">
-                    <button id="createListBtn" class="modal-btn-primary">Create List</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="importTasksModal" class="modal">
-            <div class="modal-content modal-lg">
-                <div class="modal-header">
-                    <span class="close">&times;</span>
-                    <h3 class="modal-title">📥 Import Tasks from File</h3>
-                </div>
-                
-                <div class="modal-body-scrollable">
-                    <div class="upload-section">
-                        <h4 class="section-title">Upload File</h4>
-                        
-                        <div id="importDropArea" class="drop-area">
-                            <div class="drop-area-icon"><i class="fa-solid fa-folder-open"></i></div>
-                            <div class="drop-area-title">Drag & drop file here</div>
-                            <div class="drop-area-or">or</div>
-                            <button id="importBrowseFileBtn" class="btn-browse">Browse Files</button>
-                            <input type="file" id="importFileInput" class="file-input" accept=".csv,.json,.txt,.xlsx,.xls" style="display: none;">
-                        </div>
-                        
-                        <div class="supported-formats">
-                            <strong>Supported formats:</strong> CSV, JSON, TXT (one task per line), Excel (.xlsx, .xls)
-                        </div>
-                    </div>
-                    
-                    <div id="importPreviewArea" class="preview-area" style="display: none;">
-                        <h4 class="section-title">Preview Imported Tasks</h4>
-                        <div class="preview-table-container">
-                            <table class="preview-table">
-                                <thead>
-                                    <tr>
-                                        <th>Task Name</th>
-                                        <th>Owner</th>
-                                        <th>Reviewer</th>
-                                        <th>Due Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="importPreviewBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="options-section">
-                        <h4 class="section-title">Import Options</h4>
-                        
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="importTarget" value="newList" checked>
-                                <span>Create New List with imported tasks</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="importTarget" value="currentList">
-                                <span>Add to currently selected list</span>
-                            </label>
-                        </div>
-                        
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="skipDuplicates" checked>
-                                <span>Skip duplicate task names</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button id="cancelImportBtn" class="btn-secondary">Cancel</button>
-                    <button id="processImportBtn" class="btn-primary" disabled>Import Tasks</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="addTaskModal" class="modal">
-            <div class="modal-content modal-md">
-                <span class="close">&times;</span>
-                <h3 class="modal-title">Add New Task</h3>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Task Name *</label>
-                        <input type="text" id="addTaskName" class="form-input" placeholder="Enter task name" autofocus>
-                    </div>
-                    
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>Acc</label>
-                            <input type="text" id="addTaskAcc" class="form-input" value="+">
-                        </div>
-                        <div class="form-group">
-                            <label>TDoc</label>
-                            <input type="text" id="addTaskTdoc" class="form-input" value="0">
-                        </div>
-                    </div>
-                    
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>Owner</label>
-                            <select id="addTaskOwner" class="form-select">
-                                <option value="PK">PK (Palakh Khanna)</option>
-                                <option value="SM">SM (Sarah Miller)</option>
-                                <option value="MP">MP (Mel Preparer)</option>
-                                <option value="PP">PP (Poppy Pan)</option>
-                                <option value="JS">JS (John Smith)</option>
-                                <option value="EW">EW (Emma Watson)</option>
-                                <option value="DB">DB (David Brown)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Reviewer</label>
-                            <select id="addTaskReviewer" class="form-select">
-                                <option value="PK">PK (Palakh Khanna)</option>
-                                <option value="SM">SM (Sarah Miller)</option>
-                                <option value="MP">MP (Mel Preparer)</option>
-                                <option value="PP">PP (Poppy Pan)</option>
-                                <option value="JS">JS (John Smith)</option>
-                                <option value="EW">EW (Emma Watson)</option>
-                                <option value="DB">DB (David Brown)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Due Date (optional)</label>
-                        <input type="date" id="addTaskDueDate" class="form-input">
-                    </div>
-                    
-                    <button id="addTaskBtn" class="modal-btn-primary">Add Task</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="addSubtaskModal" class="modal">
-            <div class="modal-content modal-md">
-                <span class="close">&times;</span>
-                <h3 class="modal-title">Add Subtask</h3>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Subtask Name</label>
-                        <input type="text" id="subtaskName" class="form-input" placeholder="Enter subtask name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="subtaskStatus" class="form-select">
-                            <option value="Not Started">Not Started</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>Owner</label>
-                            <select id="subtaskOwner" class="form-select">
-                                <option value="PK">PK</option>
-                                <option value="SM">SM</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Reviewer</label>
-                            <select id="subtaskReviewer" class="form-select">
-                                <option value="PK">PK</option>
-                                <option value="SM">SM</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>TDoc</label>
-                        <input type="text" id="subtaskTdoc" class="form-input" value="">
-                    </div>
-                    
-                    <button id="addSubtaskBtn" class="modal-btn-primary">Add Subtask</button>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modalContainer);
+    const modals = [
+        'newTaskOptionsModal',
+        'enterListNameModal', 
+        'importTasksModal',
+        'addTaskModal',
+        'addSubtaskModal'
+    ];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            (window as any)[modalId] = modal;
+        }
+    });
+    
+    console.log('Modal references initialized');
 }
-
 
 
 function makeStatusEditable(): void {
@@ -8072,7 +7836,6 @@ function addDownloadModalStyles(): void {
 }
 
 function showDownloadOptions(): void {
-    // Ensure styles are loaded
     addDownloadModalStyles();
     
     let downloadModal = document.getElementById('downloadModal');
@@ -8141,64 +7904,47 @@ function addSortModalStyles(): void {
 }
 
 function showSortOptions(): void {
-    // Ensure styles are loaded
-    addSortModalStyles();
-    
-    let sortModal = document.getElementById('sortModal');
+    const sortModal = document.getElementById('sortModal') as HTMLElement;
     
     if (!sortModal) {
-        sortModal = document.createElement('div');
-        sortModal.id = 'sortModal';
-        sortModal.className = 'modal';
-        sortModal.innerHTML = `
-            <div class="modal-content modal-sort">
-                <span class="close">&times;</span>
-                <h3 class="cdoc-header">Sort Tasks</h3>
-                
-                <div class="sort-body">
-                    <div class="form-group">
-                        <label class="form-label">Sort By</label>
-                        <select id="sortBy" class="sort-select">
-                            <option value="taskName">Task Name</option>
-                            <option value="dueDate">Due Date</option>
-                            <option value="status">Status</option>
-                            <option value="owner">Owner</option>
-                            <option value="reviewer">Reviewer</option>
-                            <option value="days">+/- Days</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Order</label>
-                        <select id="sortOrder" class="sort-select">
-                            <option value="asc">Ascending (A-Z)</option>
-                            <option value="desc">Descending (Z-A)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button id="applySortBtn" class="btn-primary">Apply Sort</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(sortModal);
-        
-        const close = () => {
-            if (sortModal) sortModal.style.display = 'none';
-        };
-        
-        sortModal.querySelector('.close')?.addEventListener('click', close);
-        
-        document.getElementById('applySortBtn')?.addEventListener('click', () => {
-            const sortBy = (document.getElementById('sortBy') as HTMLSelectElement).value;
-            const sortOrder = (document.getElementById('sortOrder') as HTMLSelectElement).value as 'asc' | 'desc';
+        console.error('Sort modal template not found');
+        return;
+    }
+    
+    const modalClone = sortModal.cloneNode(true) as HTMLElement;
+    modalClone.id = 'sortModal';
+    modalClone.style.display = 'block';
+    const existingModal = document.getElementById('sortModal');
+    if (existingModal && existingModal !== sortModal) {
+        existingModal.remove();
+    }
+    
+    document.body.appendChild(modalClone);
+    
+    const close = () => {
+        modalClone.remove();
+    };
+    
+    const closeBtn = modalClone.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', close);
+    }
+    
+    const applyBtn = modalClone.querySelector('#applySortBtn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            const sortBy = (modalClone.querySelector('#sortBy') as HTMLSelectElement).value;
+            const sortOrder = (modalClone.querySelector('#sortOrder') as HTMLSelectElement).value as 'asc' | 'desc';
             applySort(sortBy, sortOrder);
             close();
         });
     }
     
-    sortModal.style.display = 'block';
+    modalClone.addEventListener('click', (e) => {
+        if (e.target === modalClone) {
+            close();
+        }
+    });
 }
 
 function applySort(sortBy: string, sortOrder: 'asc' | 'desc'): void {
@@ -8253,7 +7999,7 @@ function applySort(sortBy: string, sortOrder: 'asc' | 'desc'): void {
     
     const remainingTasks = taskRows.filter(row => {
         const childrenArray = Array.from(tbody.children);
-        return childrenArray.indexOf(row) === -1; // Using indexOf instead of includes
+        return childrenArray.indexOf(row) === -1; 
     });
     remainingTasks.forEach(row => tbody.appendChild(row));
     subtaskRows.forEach(row => tbody.appendChild(row));
@@ -8305,9 +8051,7 @@ function loadColumnVisibility(): void {
 
 function initializeSimpleUserColumns(): void {
     console.log('Initializing user columns...');
-    
-    // Load CSS from external file
-    if (!document.getElementById('user-columns-styles')) {
+        if (!document.getElementById('user-columns-styles')) {
         const link = document.createElement('link');
         link.id = 'user-columns-styles';
         link.rel = 'stylesheet';
